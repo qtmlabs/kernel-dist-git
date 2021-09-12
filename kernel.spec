@@ -118,7 +118,7 @@ Summary: The Linux kernel
 %global zcpu `nproc --all`
 %endif
 
-# define buildid .local
+%define buildid .qtmlabs
 
 
 %if 0%{?fedora}
@@ -132,13 +132,13 @@ Summary: The Linux kernel
 
 %define rpmversion 5.17.6
 %define patchversion 5.17
-%define pkgrelease 200
+%define pkgrelease 400
 
 # This is needed to do merge window version magic
 %define patchlevel 17
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 200%{?buildid}%{?dist}
+%define specrelease 400%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -861,6 +861,7 @@ Patch1: patch-%{patchversion}-redhat.patch
 
 # empty final patch to facilitate testing of kernel patches
 Patch999999: linux-kernel-test.patch
+Patch1000001: qtmlabs.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1399,6 +1400,7 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
+ApplyOptionalPatch qtmlabs.patch
 
 # END OF PATCH APPLICATIONS
 
