@@ -861,6 +861,7 @@ Patch1: patch-%{patchversion}-redhat.patch
 
 # empty final patch to facilitate testing of kernel patches
 Patch999999: linux-kernel-test.patch
+Patch1000000: mgLRU-v7.patch
 Patch1000001: qtmlabs.patch
 
 # END OF PATCH DEFINITIONS
@@ -1400,6 +1401,7 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
+ApplyOptionalPatch mgLRU-v7.patch
 ApplyOptionalPatch qtmlabs.patch
 
 # END OF PATCH APPLICATIONS
