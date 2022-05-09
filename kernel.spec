@@ -859,6 +859,7 @@ Patch1: patch-%{patchversion}-redhat.patch
 
 # empty final patch to facilitate testing of kernel patches
 Patch999999: linux-kernel-test.patch
+Patch1000000: xanmod.diff
 Patch1000001: qtmlabs.patch
 
 # END OF PATCH DEFINITIONS
@@ -1398,6 +1399,7 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
+ApplyOptionalPatch xanmod.diff
 ApplyOptionalPatch qtmlabs.patch
 
 # END OF PATCH APPLICATIONS
