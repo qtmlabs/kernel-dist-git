@@ -1,0 +1,95 @@
+From e911aa27134150a1d0b0e7754abb789b092d0677 Mon Sep 17 00:00:00 2001
+From: msizanoen1 <msizanoen@qtmlabs.xyz>
+Date: Thu, 27 Oct 2022 13:21:07 +0700
+Subject: [PATCH 1/2] Revert "xhci: prevent bus suspend if a roothub port
+ detected a over-current condition"
+
+This reverts commit e9fb08d617bfae5471d902112667d0eeb9dee3c4.
+---
+ drivers/usb/host/xhci-hub.c | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/drivers/usb/host/xhci-hub.c b/drivers/usb/host/xhci-hub.c
+index 94c94db3faf6..9e4f51c1e2af 100644
+--- a/drivers/usb/host/xhci-hub.c
++++ b/drivers/usb/host/xhci-hub.c
+@@ -1694,8 +1694,6 @@ int xhci_hub_status_data(struct usb_hcd *hcd, char *buf)
+ 		}
+ 		if ((temp & PORT_RC))
+ 			reset_change = true;
+-		if (temp & PORT_OC)
+-			status = 1;
+ 	}
+ 	if (!status && !reset_change) {
+ 		xhci_dbg(xhci, "%s: stopping usb%d port polling\n",
+@@ -1763,13 +1761,6 @@ int xhci_bus_suspend(struct usb_hcd *hcd)
+ 				 hcd->self.busnum, port_index + 1);
+ 			goto retry;
+ 		}
+-		/* bail out if port detected a over-current condition */
+-		if (t1 & PORT_OC) {
+-			bus_state->bus_suspended = 0;
+-			spin_unlock_irqrestore(&xhci->lock, flags);
+-			xhci_dbg(xhci, "Bus suspend bailout, port over-current detected\n");
+-			return -EBUSY;
+-		}
+ 		/* suspend ports in U0, or bail out for new connect changes */
+ 		if ((t1 & PORT_PE) && (t1 & PORT_PLS_MASK) == XDEV_U0) {
+ 			if ((t1 & PORT_CSC) && wake_enabled) {
+-- 
+2.39.2
+
+
+From e9dc2c00d30b35ec7d74ceb69601ab923a9f99d3 Mon Sep 17 00:00:00 2001
+From: msizanoen <msizanoen@qtmlabs.xyz>
+Date: Sat, 18 Mar 2023 21:28:36 +0700
+Subject: [PATCH 2/2] input: alps: fix compatibility with -funsigned-char
+
+The AlpsPS/2 code previously relied on the assumption that `char` is a
+signed type, which was true on x86 platforms (the only place where this
+driver is used) before kernel 6.2. However, on 6.2 and later, this
+assumption is broken due to the introduction of -funsigned-char as a new
+global compiler flag.
+
+Fix this by explicitly specifying the signedness of `char` when sign
+extending the values received from the device.
+
+Fixes: f3f33c677699 ("Input: alps - Rushmore and v7 resolution support")
+Cc: stable@vger.kernel.org
+Signed-off-by: msizanoen <msizanoen@qtmlabs.xyz>
+---
+ drivers/input/mouse/alps.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
+index 989228b5a0a4..1c570d373b30 100644
+--- a/drivers/input/mouse/alps.c
++++ b/drivers/input/mouse/alps.c
+@@ -2294,20 +2294,20 @@ static int alps_get_v3_v7_resolution(struct psmouse *psmouse, int reg_pitch)
+ 	if (reg < 0)
+ 		return reg;
+ 
+-	x_pitch = (char)(reg << 4) >> 4; /* sign extend lower 4 bits */
++	x_pitch = (signed char)(reg << 4) >> 4; /* sign extend lower 4 bits */
+ 	x_pitch = 50 + 2 * x_pitch; /* In 0.1 mm units */
+ 
+-	y_pitch = (char)reg >> 4; /* sign extend upper 4 bits */
++	y_pitch = (signed char)reg >> 4; /* sign extend upper 4 bits */
+ 	y_pitch = 36 + 2 * y_pitch; /* In 0.1 mm units */
+ 
+ 	reg = alps_command_mode_read_reg(psmouse, reg_pitch + 1);
+ 	if (reg < 0)
+ 		return reg;
+ 
+-	x_electrode = (char)(reg << 4) >> 4; /* sign extend lower 4 bits */
++	x_electrode = (signed char)(reg << 4) >> 4; /* sign extend lower 4 bits */
+ 	x_electrode = 17 + x_electrode;
+ 
+-	y_electrode = (char)reg >> 4; /* sign extend upper 4 bits */
++	y_electrode = (signed char)reg >> 4; /* sign extend upper 4 bits */
+ 	y_electrode = 13 + y_electrode;
+ 
+ 	x_phys = x_pitch * (x_electrode - 1); /* In 0.1 mm units */
+-- 
+2.39.2
+
