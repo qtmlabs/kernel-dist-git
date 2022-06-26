@@ -147,7 +147,7 @@ Summary: The Linux kernel
 #  to build the base kernel using the debug configuration. (Specifying
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
-# define buildid .local
+%define buildid .qtmlabs
 %define specversion 6.2.7
 %define patchversion 6.2
 %define pkgrelease 200
@@ -908,6 +908,7 @@ Patch1: patch-%{patchversion}-redhat.patch
 
 # empty final patch to facilitate testing of kernel patches
 Patch999999: linux-kernel-test.patch
+Patch1000001: qtmlabs.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1525,6 +1526,7 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
+ApplyOptionalPatch qtmlabs.patch
 
 # END OF PATCH APPLICATIONS
 
