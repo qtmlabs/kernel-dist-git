@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 # define buildid .local
-%define specversion 5.18.18
+%define specversion 5.18.19
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.18
+%define tarfile_release 5.18.19
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -3034,6 +3034,9 @@ fi
 #
 #
 %changelog
+
+* Sun Aug 21 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.19-200]
+- v5.18.19 rebase
 * Wed Aug 17 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.18-0]
 - Config updates for 5.19.2 (Justin M. Forbes)
 - Bluetooth: hci_event: Fix vendor (unknown) opcode status handling (Hans de Goede)
