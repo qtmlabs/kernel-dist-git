@@ -1,16 +1,16 @@
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64 b/CONFIGS/xanmod/gcc/config_x86-64
 new file mode 100644
-index 000000000000..f8c13e9f9304
+index 000000000000..c302d17c6189
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64
-@@ -0,0 +1,11702 @@
+@@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.3 Kernel Configuration
++# Linux/x86 5.19.6 Kernel Configuration
 +#
-+CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.1.0-8) 12.1.0"
++CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
-+CONFIG_GCC_VERSION=120100
++CONFIG_GCC_VERSION=120200
 +CONFIG_CLANG_VERSION=0
 +CONFIG_AS_IS_GNU=y
 +CONFIG_AS_VERSION=23890
@@ -8877,7 +8877,6 @@ index 000000000000..f8c13e9f9304
 +CONFIG_VIRTIO_PCI_LIB=y
 +CONFIG_VIRTIO_PCI_LIB_LEGACY=y
 +CONFIG_VIRTIO_MENU=y
-+# CONFIG_VIRTIO_HARDEN_NOTIFICATION is not set
 +CONFIG_VIRTIO_PCI=y
 +CONFIG_VIRTIO_PCI_LEGACY=y
 +CONFIG_VIRTIO_VDPA=m
@@ -11708,17 +11707,17 @@ index 000000000000..f8c13e9f9304
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v2 b/CONFIGS/xanmod/gcc/config_x86-64-v2
 new file mode 100644
-index 000000000000..1824d8b393f2
+index 000000000000..2242fbe9d4c0
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v2
-@@ -0,0 +1,11702 @@
+@@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.3 Kernel Configuration
++# Linux/x86 5.19.6 Kernel Configuration
 +#
-+CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.1.0-8) 12.1.0"
++CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
-+CONFIG_GCC_VERSION=120100
++CONFIG_GCC_VERSION=120200
 +CONFIG_CLANG_VERSION=0
 +CONFIG_AS_IS_GNU=y
 +CONFIG_AS_VERSION=23890
@@ -20585,7 +20584,6 @@ index 000000000000..1824d8b393f2
 +CONFIG_VIRTIO_PCI_LIB=y
 +CONFIG_VIRTIO_PCI_LIB_LEGACY=y
 +CONFIG_VIRTIO_MENU=y
-+# CONFIG_VIRTIO_HARDEN_NOTIFICATION is not set
 +CONFIG_VIRTIO_PCI=y
 +CONFIG_VIRTIO_PCI_LEGACY=y
 +CONFIG_VIRTIO_VDPA=m
@@ -23416,17 +23414,17 @@ index 000000000000..1824d8b393f2
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v3 b/CONFIGS/xanmod/gcc/config_x86-64-v3
 new file mode 100644
-index 000000000000..bea47cbe1764
+index 000000000000..febd870c67a3
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v3
-@@ -0,0 +1,11702 @@
+@@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.3 Kernel Configuration
++# Linux/x86 5.19.6 Kernel Configuration
 +#
-+CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.1.0-8) 12.1.0"
++CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
-+CONFIG_GCC_VERSION=120100
++CONFIG_GCC_VERSION=120200
 +CONFIG_CLANG_VERSION=0
 +CONFIG_AS_IS_GNU=y
 +CONFIG_AS_VERSION=23890
@@ -32293,7 +32291,6 @@ index 000000000000..bea47cbe1764
 +CONFIG_VIRTIO_PCI_LIB=y
 +CONFIG_VIRTIO_PCI_LIB_LEGACY=y
 +CONFIG_VIRTIO_MENU=y
-+# CONFIG_VIRTIO_HARDEN_NOTIFICATION is not set
 +CONFIG_VIRTIO_PCI=y
 +CONFIG_VIRTIO_PCI_LEGACY=y
 +CONFIG_VIRTIO_VDPA=m
@@ -35138,7 +35135,7 @@ index 9764d6edb189..a4696d3b4a5a 100644
  
    11 char	Raw keyboard device	(Linux/SPARC only)
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index e4fe443bea77..6abe104ed6cf 100644
+index 1b38d0f70677..cc9904f07365 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
 @@ -376,6 +376,10 @@
@@ -36024,17 +36021,156 @@ index 08620b9a44fc..534248cdd063 100644
  M:	William Breathitt Gray <vilhelm.gray@gmail.com>
  L:	linux-watchdog@vger.kernel.org
 diff --git a/Makefile b/Makefile
-index 8595916561f3..49bd57f141c0 100644
+index cb68101ea070..1bd1ac13e8de 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -757,6 +757,7 @@ ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
+@@ -753,6 +753,136 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
+ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
+ KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
+ 
++# This selects which ARM instruction set is used.
++# Note that GCC does not numerically define an architecture version
++# macro, but instead defines a whole series of macros which makes
++# testing for a specific architecture or later rather impossible.
++arch-$(CONFIG_CPU_32v7M)	=-D__LINUX_ARM_ARCH__=7 -march=armv7-m
++arch-$(CONFIG_CPU_32v7)		=-D__LINUX_ARM_ARCH__=7 -march=armv7-a
++arch-$(CONFIG_CPU_32v6)		=-D__LINUX_ARM_ARCH__=6 -march=armv6
++# Only override the compiler option if ARMv6. The ARMv6K extensions are
++# always available in ARMv7
++ifeq ($(CONFIG_CPU_32v6),y)
++arch-$(CONFIG_CPU_32v6K)	=-D__LINUX_ARM_ARCH__=6 -march=armv6k
++endif
++arch-$(CONFIG_CPU_32v5)		=-D__LINUX_ARM_ARCH__=5 -march=armv5te
++arch-$(CONFIG_CPU_32v4T)	=-D__LINUX_ARM_ARCH__=4 -march=armv4t
++arch-$(CONFIG_CPU_32v4)		=-D__LINUX_ARM_ARCH__=4 -march=armv4
++arch-$(CONFIG_CPU_32v3)		=-D__LINUX_ARM_ARCH__=3 -march=armv3m
++
++# Evaluate arch cc-option calls now
++arch-y := $(arch-y)
++
++# This selects how we optimise for the processor.
++tune-$(CONFIG_CPU_ARM7TDMI)	=-mtune=arm7tdmi
++tune-$(CONFIG_CPU_ARM720T)	=-mtune=arm7tdmi
++tune-$(CONFIG_CPU_ARM740T)	=-mtune=arm7tdmi
++tune-$(CONFIG_CPU_ARM9TDMI)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_ARM940T)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_ARM946E)	=-mtune=arm9e
++tune-$(CONFIG_CPU_ARM920T)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_ARM922T)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_ARM925T)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_ARM926T)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_FA526)	=-mtune=arm9tdmi
++tune-$(CONFIG_CPU_SA110)	=-mtune=strongarm110
++tune-$(CONFIG_CPU_SA1100)	=-mtune=strongarm1100
++tune-$(CONFIG_CPU_XSCALE)	=-mtune=xscale
++tune-$(CONFIG_CPU_XSC3)		=-mtune=xscale
++tune-$(CONFIG_CPU_FEROCEON)	=-mtune=xscale
++tune-$(CONFIG_CPU_V6)		=-mtune=arm1136j-s
++tune-$(CONFIG_CPU_V6K)		=-mtune=arm1136j-s
++
++# Evaluate tune cc-option calls now
++tune-y := $(tune-y)
++
++# This selects which x86 instruction set is used.
++cflags-$(CONFIG_M486SX)		+= -march=i486
++cflags-$(CONFIG_M486)		+= -march=i486
++cflags-$(CONFIG_M586)		+= -march=i586
++cflags-$(CONFIG_M586TSC)	+= -march=i586
++cflags-$(CONFIG_M586MMX)	+= -march=pentium-mmx
++cflags-$(CONFIG_M686)		+= -march=i686
++cflags-$(CONFIG_MPENTIUMII)	+= -march=i686 $(call tune,pentium2)
++cflags-$(CONFIG_MPENTIUMIII)	+= -march=i686 $(call tune,pentium3)
++cflags-$(CONFIG_MPENTIUMM)	+= -march=i686 $(call tune,pentium3)
++cflags-$(CONFIG_MPENTIUM4)	+= -march=i686 $(call tune,pentium4)
++cflags-$(CONFIG_MK6)		+= -march=k6
++# Please note, that patches that add -march=athlon-xp and friends are pointless.
++# They make zero difference whatsosever to performance at this time.
++cflags-$(CONFIG_MK7)		+= -march=athlon
++cflags-$(CONFIG_MK8)		+= $(call cc-option,-march=k8,-march=athlon)
++cflags-$(CONFIG_MCRUSOE)	+= -march=i686 $(align)
++cflags-$(CONFIG_MEFFICEON)	+= -march=i686 $(call tune,pentium3) $(align)
++cflags-$(CONFIG_MWINCHIPC6)	+= $(call cc-option,-march=winchip-c6,-march=i586)
++cflags-$(CONFIG_MWINCHIP3D)	+= $(call cc-option,-march=winchip2,-march=i586)
++cflags-$(CONFIG_MCYRIXIII)	+= $(call cc-option,-march=c3,-march=i486) $(align)
++cflags-$(CONFIG_MVIAC3_2)	+= $(call cc-option,-march=c3-2,-march=i686)
++cflags-$(CONFIG_MVIAC7)		+= -march=i686
++cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call tune,core2)
++cflags-$(CONFIG_MATOM)		+= $(call cc-option,-march=atom,$(call cc-option,-march=core2,-march=i686)) \
++$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
++
++# AMD Elan support
++cflags-$(CONFIG_MELAN)		+= -march=i486
++
++# Geode GX1 support
++cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
++cflags-$(CONFIG_MGEODE_LX)	+= $(call cc-option,-march=geode,-march=pentium-mmx)
++# add at the end to overwrite eventual tuning options from earlier
++# cpu entries
++cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
++
++# Bug fix for binutils: this option is required in order to keep
++# binutils from generating NOPL instructions against our will.
++ifneq ($(CONFIG_X86_P6_NOP),y)
++cflags-y			+= $(call cc-option,-Wa$(comma)-mtune=generic32,)
++endif
++
++# x86_64 instruction set
++cflags64-$(CONFIG_MK8)		+= -march=k8
++cflags64-$(CONFIG_MPSC)		+= -march=nocona
++cflags64-$(CONFIG_MK8SSE3)	+= -march=k8-sse3
++cflags64-$(CONFIG_MK10) 		+= -march=amdfam10
++cflags64-$(CONFIG_MBARCELONA) 	+= -march=barcelona
++cflags64-$(CONFIG_MBOBCAT) 	+= -march=btver1
++cflags64-$(CONFIG_MJAGUAR) 	+= -march=btver2
++cflags64-$(CONFIG_MBULLDOZER) 	+= -march=bdver1
++cflags64-$(CONFIG_MPILEDRIVER)	+= -march=bdver2 -mno-tbm
++cflags64-$(CONFIG_MSTEAMROLLER) 	+= -march=bdver3 -mno-tbm
++cflags64-$(CONFIG_MEXCAVATOR) 	+= -march=bdver4 -mno-tbm
++cflags64-$(CONFIG_MZEN) 		+= -march=znver1
++cflags64-$(CONFIG_MZEN2) 	+= -march=znver2
++cflags64-$(CONFIG_MZEN3) 	+= -march=znver3
++cflags64-$(CONFIG_MNATIVE_INTEL) += -march=native
++cflags64-$(CONFIG_MNATIVE_AMD) 	+= -march=native
++cflags64-$(CONFIG_MATOM) 	+= -march=bonnell
++cflags64-$(CONFIG_MCORE2) 	+= -march=core2
++cflags64-$(CONFIG_MNEHALEM) 	+= -march=nehalem
++cflags64-$(CONFIG_MWESTMERE) 	+= -march=westmere
++cflags64-$(CONFIG_MSILVERMONT) 	+= -march=silvermont
++cflags64-$(CONFIG_MGOLDMONT) 	+= -march=goldmont
++cflags64-$(CONFIG_MGOLDMONTPLUS) += -march=goldmont-plus
++cflags64-$(CONFIG_MSANDYBRIDGE) 	+= -march=sandybridge
++cflags64-$(CONFIG_MIVYBRIDGE) 	+= -march=ivybridge
++cflags64-$(CONFIG_MHASWELL) 	+= -march=haswell
++cflags64-$(CONFIG_MBROADWELL) 	+= -march=broadwell
++cflags64-$(CONFIG_MSKYLAKE) 	+= -march=skylake
++cflags64-$(CONFIG_MSKYLAKEX) 	+= -march=skylake-avx512
++cflags64-$(CONFIG_MCANNONLAKE) 	+= -march=cannonlake
++cflags64-$(CONFIG_MICELAKE) 	+= -march=icelake-client
++cflags64-$(CONFIG_MCASCADELAKE) 	+= -march=cascadelake
++cflags64-$(CONFIG_MCOOPERLAKE) 	+= -march=cooperlake
++cflags64-$(CONFIG_MTIGERLAKE) 	+= -march=tigerlake
++cflags64-$(CONFIG_MSAPPHIRERAPIDS) += -march=sapphirerapids
++cflags64-$(CONFIG_MROCKETLAKE) 	+= -march=rocketlake
++cflags64-$(CONFIG_MALDERLAKE) 	+= -march=alderlake
++cflags64-$(CONFIG_GENERIC_CPU2) 	+= -march=x86-64-v2
++cflags64-$(CONFIG_GENERIC_CPU3) 	+= -march=x86-64-v3
++cflags64-$(CONFIG_GENERIC_CPU4) 	+= -march=x86-64-v4
++cflags64-$(CONFIG_GENERIC_CPU)	+= -mtune=generic
++KBUILD_CFLAGS += $(cflags64-y)
++
+ ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
  KBUILD_CFLAGS += -O2
  else ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3
- KBUILD_CFLAGS += -O3
-+KBUILD_CFLAGS += $(call cc-option, -fno-tree-loop-vectorize)
- else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
- KBUILD_CFLAGS += -Os
+@@ -986,6 +1116,9 @@ ifdef CONFIG_CC_IS_GCC
+ KBUILD_CFLAGS += $(call cc-ifversion, -ge, 0901, -Wno-alloc-size-larger-than)
  endif
+ 
++# disable GCC vectorization on trees
++KBUILD_CFLAGS	+= $(call cc-option, -fno-tree-vectorize)
++
+ # disable invalid "can't wrap" optimizations for signed / pointers
+ KBUILD_CFLAGS	+= -fno-strict-overflow
+ 
 diff --git a/arch/Kconfig b/arch/Kconfig
 index 5ea3e3838c21..679047804fac 100644
 --- a/arch/Kconfig
@@ -36054,6 +36190,60 @@ index 5ea3e3838c21..679047804fac 100644
  source "kernel/gcov/Kconfig"
  
  source "scripts/gcc-plugins/Kconfig"
+diff --git a/arch/arm/Makefile b/arch/arm/Makefile
+index c8e3633f5434..c89da1caade9 100644
+--- a/arch/arm/Makefile
++++ b/arch/arm/Makefile
+@@ -56,49 +56,6 @@ endif
+ #
+ KBUILD_CFLAGS	+= $(call cc-option,-fno-ipa-sra)
+ 
+-# This selects which instruction set is used.
+-# Note that GCC does not numerically define an architecture version
+-# macro, but instead defines a whole series of macros which makes
+-# testing for a specific architecture or later rather impossible.
+-arch-$(CONFIG_CPU_32v7M)	=-D__LINUX_ARM_ARCH__=7 -march=armv7-m
+-arch-$(CONFIG_CPU_32v7)		=-D__LINUX_ARM_ARCH__=7 -march=armv7-a
+-arch-$(CONFIG_CPU_32v6)		=-D__LINUX_ARM_ARCH__=6 -march=armv6
+-# Only override the compiler option if ARMv6. The ARMv6K extensions are
+-# always available in ARMv7
+-ifeq ($(CONFIG_CPU_32v6),y)
+-arch-$(CONFIG_CPU_32v6K)	=-D__LINUX_ARM_ARCH__=6 -march=armv6k
+-endif
+-arch-$(CONFIG_CPU_32v5)		=-D__LINUX_ARM_ARCH__=5 -march=armv5te
+-arch-$(CONFIG_CPU_32v4T)	=-D__LINUX_ARM_ARCH__=4 -march=armv4t
+-arch-$(CONFIG_CPU_32v4)		=-D__LINUX_ARM_ARCH__=4 -march=armv4
+-arch-$(CONFIG_CPU_32v3)		=-D__LINUX_ARM_ARCH__=3 -march=armv3m
+-
+-# Evaluate arch cc-option calls now
+-arch-y := $(arch-y)
+-
+-# This selects how we optimise for the processor.
+-tune-$(CONFIG_CPU_ARM7TDMI)	=-mtune=arm7tdmi
+-tune-$(CONFIG_CPU_ARM720T)	=-mtune=arm7tdmi
+-tune-$(CONFIG_CPU_ARM740T)	=-mtune=arm7tdmi
+-tune-$(CONFIG_CPU_ARM9TDMI)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_ARM940T)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_ARM946E)	=-mtune=arm9e
+-tune-$(CONFIG_CPU_ARM920T)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_ARM922T)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_ARM925T)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_ARM926T)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_FA526)	=-mtune=arm9tdmi
+-tune-$(CONFIG_CPU_SA110)	=-mtune=strongarm110
+-tune-$(CONFIG_CPU_SA1100)	=-mtune=strongarm1100
+-tune-$(CONFIG_CPU_XSCALE)	=-mtune=xscale
+-tune-$(CONFIG_CPU_XSC3)		=-mtune=xscale
+-tune-$(CONFIG_CPU_FEROCEON)	=-mtune=xscale
+-tune-$(CONFIG_CPU_V6)		=-mtune=arm1136j-s
+-tune-$(CONFIG_CPU_V6K)		=-mtune=arm1136j-s
+-
+-# Evaluate tune cc-option calls now
+-tune-y := $(tune-y)
+-
+ ifeq ($(CONFIG_AEABI),y)
+ CFLAGS_ABI	:=-mabi=aapcs-linux -mfpu=vfp
+ else
 diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
 index 0b6632f18364..c46399c0500c 100644
 --- a/arch/arm64/include/asm/pgtable.h
@@ -36551,7 +36741,7 @@ index 542377cd419d..22b919cdb6d1 100644
  	default "4"
  
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 7854685c5f25..b797ffcf3fc8 100644
+index 7854685c5f25..548d94556fbd 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
 @@ -67,7 +67,8 @@ export BITS
@@ -36560,57 +36750,74 @@ index 7854685c5f25..b797ffcf3fc8 100644
  #
 -KBUILD_CFLAGS += -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx
 +KBUILD_CFLAGS += -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -mno-avx -mno-avx2 \
-+		   -mno-avx512f -mpopcnt -O3 $(call cc-option, -fno-tree-vectorize)
++		   -mno-avx512f -O3
  
  ifeq ($(CONFIG_X86_KERNEL_IBT),y)
  #
-@@ -150,8 +151,44 @@ else
-         # FIXME - should be integrated in Makefile.cpu (Makefile_32.cpu)
-         cflags-$(CONFIG_MK8)		+= -march=k8
-         cflags-$(CONFIG_MPSC)		+= -march=nocona
+@@ -147,14 +148,6 @@ else
+ 	# Use -mskip-rax-setup if supported.
+ 	KBUILD_CFLAGS += $(call cc-option,-mskip-rax-setup)
+ 
+-        # FIXME - should be integrated in Makefile.cpu (Makefile_32.cpu)
+-        cflags-$(CONFIG_MK8)		+= -march=k8
+-        cflags-$(CONFIG_MPSC)		+= -march=nocona
 -        cflags-$(CONFIG_MCORE2)		+= -march=core2
 -        cflags-$(CONFIG_MATOM)		+= -march=atom
-+        cflags-$(CONFIG_MK8SSE3)	+= -march=k8-sse3
-+        cflags-$(CONFIG_MK10) 		+= -march=amdfam10
-+        cflags-$(CONFIG_MBARCELONA) 	+= -march=barcelona
-+        cflags-$(CONFIG_MBOBCAT) 	+= -march=btver1
-+        cflags-$(CONFIG_MJAGUAR) 	+= -march=btver2
-+        cflags-$(CONFIG_MBULLDOZER) 	+= -march=bdver1
-+        cflags-$(CONFIG_MPILEDRIVER)	+= -march=bdver2 -mno-tbm
-+        cflags-$(CONFIG_MSTEAMROLLER) 	+= -march=bdver3 -mno-tbm
-+        cflags-$(CONFIG_MEXCAVATOR) 	+= -march=bdver4 -mno-tbm
-+        cflags-$(CONFIG_MZEN) 		+= -march=znver1
-+        cflags-$(CONFIG_MZEN2) 	+= -march=znver2
-+        cflags-$(CONFIG_MZEN3) 	+= -march=znver3
-+        cflags-$(CONFIG_MNATIVE_INTEL) += -march=native
-+        cflags-$(CONFIG_MNATIVE_AMD) 	+= -march=native
-+        cflags-$(CONFIG_MATOM) 	+= -march=bonnell
-+        cflags-$(CONFIG_MCORE2) 	+= -march=core2
-+        cflags-$(CONFIG_MNEHALEM) 	+= -march=nehalem
-+        cflags-$(CONFIG_MWESTMERE) 	+= -march=westmere
-+        cflags-$(CONFIG_MSILVERMONT) 	+= -march=silvermont
-+        cflags-$(CONFIG_MGOLDMONT) 	+= -march=goldmont
-+        cflags-$(CONFIG_MGOLDMONTPLUS) += -march=goldmont-plus
-+        cflags-$(CONFIG_MSANDYBRIDGE) 	+= -march=sandybridge
-+        cflags-$(CONFIG_MIVYBRIDGE) 	+= -march=ivybridge
-+        cflags-$(CONFIG_MHASWELL) 	+= -march=haswell
-+        cflags-$(CONFIG_MBROADWELL) 	+= -march=broadwell
-+        cflags-$(CONFIG_MSKYLAKE) 	+= -march=skylake
-+        cflags-$(CONFIG_MSKYLAKEX) 	+= -march=skylake-avx512
-+        cflags-$(CONFIG_MCANNONLAKE) 	+= -march=cannonlake
-+        cflags-$(CONFIG_MICELAKE) 	+= -march=icelake-client
-+        cflags-$(CONFIG_MCASCADELAKE) 	+= -march=cascadelake
-+        cflags-$(CONFIG_MCOOPERLAKE) 	+= -march=cooperlake
-+        cflags-$(CONFIG_MTIGERLAKE) 	+= -march=tigerlake
-+        cflags-$(CONFIG_MSAPPHIRERAPIDS) += -march=sapphirerapids
-+        cflags-$(CONFIG_MROCKETLAKE) 	+= -march=rocketlake
-+        cflags-$(CONFIG_MALDERLAKE) 	+= -march=alderlake
-+        cflags-$(CONFIG_GENERIC_CPU2) 	+= -march=x86-64-v2
-+        cflags-$(CONFIG_GENERIC_CPU3) 	+= -march=x86-64-v3
-+        cflags-$(CONFIG_GENERIC_CPU4) 	+= -march=x86-64-v4
-         cflags-$(CONFIG_GENERIC_CPU)	+= -mtune=generic
-         KBUILD_CFLAGS += $(cflags-y)
+-        cflags-$(CONFIG_GENERIC_CPU)	+= -mtune=generic
+-        KBUILD_CFLAGS += $(cflags-y)
+-
+         KBUILD_CFLAGS += -mno-red-zone
+         KBUILD_CFLAGS += -mcmodel=kernel
+ endif
+diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+index 94834c4b5e5e..81923b4afdf8 100644
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -10,44 +10,3 @@ else
+ align		:= -falign-functions=0 -falign-jumps=0 -falign-loops=0
+ endif
  
+-cflags-$(CONFIG_M486SX)		+= -march=i486
+-cflags-$(CONFIG_M486)		+= -march=i486
+-cflags-$(CONFIG_M586)		+= -march=i586
+-cflags-$(CONFIG_M586TSC)	+= -march=i586
+-cflags-$(CONFIG_M586MMX)	+= -march=pentium-mmx
+-cflags-$(CONFIG_M686)		+= -march=i686
+-cflags-$(CONFIG_MPENTIUMII)	+= -march=i686 $(call tune,pentium2)
+-cflags-$(CONFIG_MPENTIUMIII)	+= -march=i686 $(call tune,pentium3)
+-cflags-$(CONFIG_MPENTIUMM)	+= -march=i686 $(call tune,pentium3)
+-cflags-$(CONFIG_MPENTIUM4)	+= -march=i686 $(call tune,pentium4)
+-cflags-$(CONFIG_MK6)		+= -march=k6
+-# Please note, that patches that add -march=athlon-xp and friends are pointless.
+-# They make zero difference whatsosever to performance at this time.
+-cflags-$(CONFIG_MK7)		+= -march=athlon
+-cflags-$(CONFIG_MK8)		+= $(call cc-option,-march=k8,-march=athlon)
+-cflags-$(CONFIG_MCRUSOE)	+= -march=i686 $(align)
+-cflags-$(CONFIG_MEFFICEON)	+= -march=i686 $(call tune,pentium3) $(align)
+-cflags-$(CONFIG_MWINCHIPC6)	+= $(call cc-option,-march=winchip-c6,-march=i586)
+-cflags-$(CONFIG_MWINCHIP3D)	+= $(call cc-option,-march=winchip2,-march=i586)
+-cflags-$(CONFIG_MCYRIXIII)	+= $(call cc-option,-march=c3,-march=i486) $(align)
+-cflags-$(CONFIG_MVIAC3_2)	+= $(call cc-option,-march=c3-2,-march=i686)
+-cflags-$(CONFIG_MVIAC7)		+= -march=i686
+-cflags-$(CONFIG_MCORE2)		+= -march=i686 $(call tune,core2)
+-cflags-$(CONFIG_MATOM)		+= $(call cc-option,-march=atom,$(call cc-option,-march=core2,-march=i686)) \
+-	$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
+-
+-# AMD Elan support
+-cflags-$(CONFIG_MELAN)		+= -march=i486
+-
+-# Geode GX1 support
+-cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
+-cflags-$(CONFIG_MGEODE_LX)	+= $(call cc-option,-march=geode,-march=pentium-mmx)
+-# add at the end to overwrite eventual tuning options from earlier
+-# cpu entries
+-cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
+-
+-# Bug fix for binutils: this option is required in order to keep
+-# binutils from generating NOPL instructions against our will.
+-ifneq ($(CONFIG_X86_P6_NOP),y)
+-cflags-y			+= $(call cc-option,-Wa$(comma)-mtune=generic32,)
+-endif
 diff --git a/arch/x86/boot/compressed/Makefile b/arch/x86/boot/compressed/Makefile
 index 35ce1a64068b..1744bee3f01b 100644
 --- a/arch/x86/boot/compressed/Makefile
@@ -37065,7 +37272,7 @@ index 54ac94fed015..c5bd95505681 100644
 -
 -MODULE_LICENSE("GPL v2");
 diff --git a/drivers/android/binder_alloc.c b/drivers/android/binder_alloc.c
-index d044418294f9..c40e555fb532 100644
+index 7981a2598376..ac29e180c379 100644
 --- a/drivers/android/binder_alloc.c
 +++ b/drivers/android/binder_alloc.c
 @@ -38,8 +38,7 @@ enum {
@@ -39182,7 +39389,7 @@ index 000000000000..7a28f58dbbf2
 +MODULE_ALIAS("devname:" WINESYNC_NAME);
 +MODULE_ALIAS_MISCDEV(WINESYNC_MINOR);
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 41aeaa235132..f76b7abd7d11 100644
+index 2e68f50bc7ae..36f761332ade 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -3601,6 +3601,106 @@ static void quirk_no_bus_reset(struct pci_dev *dev)
@@ -39292,7 +39499,7 @@ index 41aeaa235132..f76b7abd7d11 100644
  /*
   * Some NVIDIA GPU devices do not work with bus reset, SBR needs to be
   * prevented for those affected devices.
-@@ -4966,6 +5066,7 @@ static const struct pci_dev_acs_enabled {
+@@ -4969,6 +5069,7 @@ static const struct pci_dev_acs_enabled {
  	{ PCI_VENDOR_ID_NXP, 0x8d9b, pci_quirk_nxp_rp_acs },
  	/* Zhaoxin Root/Downstream Ports */
  	{ PCI_VENDOR_ID_ZHAOXIN, PCI_ANY_ID, pci_quirk_zhaoxin_pcie_ports_acs },
@@ -39473,7 +39680,7 @@ index bf24e7fce1fc..6cb0f9a8e752 100644
  /* flag to track if kexec reboot is in progress */
  extern bool kexec_in_progress;
 diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 9ecead1042b9..eca62345fdd5 100644
+index c322b98260f5..4c0befe50d1d 100644
 --- a/include/linux/memcontrol.h
 +++ b/include/linux/memcontrol.h
 @@ -350,6 +350,11 @@ struct mem_cgroup {
@@ -39528,7 +39735,7 @@ index 9ecead1042b9..eca62345fdd5 100644
  /* idx can be of type enum memcg_stat_item or node_stat_item */
  static inline void mod_memcg_state(struct mem_cgroup *memcg,
  				   int idx, int val)
-@@ -1401,6 +1425,18 @@ static inline void folio_memcg_unlock(struct folio *folio)
+@@ -1412,6 +1436,18 @@ static inline void folio_memcg_unlock(struct folio *folio)
  {
  }
  
@@ -39560,7 +39767,7 @@ index 0676f18093f9..350aecfcfb29 100644
  
  struct device;
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 7898e29bcfb5..7ee1a5e44882 100644
+index 25b8860f47cc..43ceffddc1b6 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
 @@ -1060,6 +1060,8 @@ vm_fault_t finish_mkwrite_fault(struct vm_fault *vmf);
@@ -41696,10 +41903,10 @@ index 169e64192e48..a0f7b6e66410 100644
  
  endmenu
 diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 15965084816d..e117033d57d9 100644
+index 0f465e70349c..c0d5b1fd6c63 100644
 --- a/mm/huge_memory.c
 +++ b/mm/huge_memory.c
-@@ -2371,7 +2371,8 @@ static void __split_huge_page_tail(struct page *head, int tail,
+@@ -2394,7 +2394,8 @@ static void __split_huge_page_tail(struct page *head, int tail,
  #ifdef CONFIG_64BIT
  			 (1L << PG_arch_2) |
  #endif
@@ -42043,7 +42250,7 @@ index a1ab9b472571..fccff941bb66 100644
  struct vm_struct *get_vm_area_caller(unsigned long size, unsigned long flags,
  				const void *caller)
 diff --git a/mm/vmscan.c b/mm/vmscan.c
-index f7d9a683e3a7..ff0219e2252d 100644
+index f7d9a683e3a7..d42df9042dac 100644
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
 @@ -50,6 +50,10 @@
@@ -43764,7 +43971,7 @@ index f7d9a683e3a7..ff0219e2252d 100644
 +}
 +
 +/* to protect the working set of the last N jiffies */
-+static unsigned long lru_gen_min_ttl __read_mostly = HZ;
++static unsigned long lru_gen_min_ttl __read_mostly;
 +
 +static void lru_gen_age_node(struct pglist_data *pgdat, struct scan_control *sc)
 +{
@@ -45603,7 +45810,7 @@ index aab384126f61..83ecd0e61bbf 100644
  	tristate "REDIRECT target support"
  	depends on NETFILTER_ADVANCED
 diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 3ae2ea048883..0eaed1811919 100644
+index 3d446773ff2a..a76c5fcf8e1f 100644
 --- a/net/ipv4/tcp.c
 +++ b/net/ipv4/tcp.c
 @@ -3092,6 +3092,7 @@ int tcp_disconnect(struct sock *sk, int flags)
@@ -48458,7 +48665,7 @@ index b1637990d570..21c2922d937b 100644
  	    tcp_in_quickack_mode(sk) ||
  	    /* Protocol state mandates a one-time immediate ACK */
 diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-index aed0c5f828be..a3ffd615f45b 100644
+index 84314de754f8..eba54461209c 100644
 --- a/net/ipv4/tcp_output.c
 +++ b/net/ipv4/tcp_output.c
 @@ -375,7 +375,8 @@ static void tcp_ecn_send(struct sock *sk, struct sk_buff *skb,
