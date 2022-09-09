@@ -1,12 +1,12 @@
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64 b/CONFIGS/xanmod/gcc/config_x86-64
 new file mode 100644
-index 000000000000..c302d17c6189
+index 000000000000..9272684f236a
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64
 @@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.6 Kernel Configuration
++# Linux/x86 5.19.8 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -11707,13 +11707,13 @@ index 000000000000..c302d17c6189
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v2 b/CONFIGS/xanmod/gcc/config_x86-64-v2
 new file mode 100644
-index 000000000000..2242fbe9d4c0
+index 000000000000..133016bf8599
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v2
 @@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.6 Kernel Configuration
++# Linux/x86 5.19.8 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -23414,13 +23414,13 @@ index 000000000000..2242fbe9d4c0
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v3 b/CONFIGS/xanmod/gcc/config_x86-64-v3
 new file mode 100644
-index 000000000000..febd870c67a3
+index 000000000000..be1eee915292
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v3
 @@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.6 Kernel Configuration
++# Linux/x86 5.19.8 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -36021,7 +36021,7 @@ index 08620b9a44fc..534248cdd063 100644
  M:	William Breathitt Gray <vilhelm.gray@gmail.com>
  L:	linux-watchdog@vger.kernel.org
 diff --git a/Makefile b/Makefile
-index cb68101ea070..1bd1ac13e8de 100644
+index e361c6230e9e..6eb0d9d8e7d0 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -753,6 +753,136 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
@@ -37244,10 +37244,10 @@ index c9d3d0c99c25..b9d5ce8deca2 100644
 +# binder-$(CONFIG_ANDROID_BINDER_IPC) := binder.o binder_alloc.o
 +# binder-$(CONFIG_ANDROID_BINDERFS) += binderfs.o
 diff --git a/drivers/android/binder.c b/drivers/android/binder.c
-index 54ac94fed015..c5bd95505681 100644
+index 8bac11d8e618..664b95c51c74 100644
 --- a/drivers/android/binder.c
 +++ b/drivers/android/binder.c
-@@ -6503,9 +6503,20 @@ static int __init binder_init(void)
+@@ -6515,9 +6515,20 @@ static int __init binder_init(void)
  	return ret;
  }
  
@@ -37272,7 +37272,7 @@ index 54ac94fed015..c5bd95505681 100644
 -
 -MODULE_LICENSE("GPL v2");
 diff --git a/drivers/android/binder_alloc.c b/drivers/android/binder_alloc.c
-index 7981a2598376..ac29e180c379 100644
+index 53797453a6ee..9baaa1062a80 100644
 --- a/drivers/android/binder_alloc.c
 +++ b/drivers/android/binder_alloc.c
 @@ -38,8 +38,7 @@ enum {
@@ -42116,10 +42116,10 @@ index 0ae7571e35ab..68e1511be12d 100644
  
  #if defined(CONFIG_NUMA_BALANCING) && !defined(LAST_CPUPID_NOT_IN_PAGE_FLAGS)
 diff --git a/mm/rmap.c b/mm/rmap.c
-index 746c05acad27..301ccb4cf0e6 100644
+index f6dd281df410..aee9f4333a6c 100644
 --- a/mm/rmap.c
 +++ b/mm/rmap.c
-@@ -830,6 +830,12 @@ static bool folio_referenced_one(struct folio *folio,
+@@ -833,6 +833,12 @@ static bool folio_referenced_one(struct folio *folio,
  		}
  
  		if (pvmw.pte) {
@@ -48579,7 +48579,7 @@ index d3cae40749e8..0f268f2ff2e9 100644
  		icsk->icsk_ca_ops->init(sk);
  	if (tcp_ca_needs_ecn(sk))
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index b1637990d570..21c2922d937b 100644
+index e5435156e545..5b86583ffc21 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
 @@ -349,7 +349,7 @@ static void __tcp_ecn_check_ce(struct sock *sk, const struct sk_buff *skb)
@@ -48837,10 +48837,10 @@ index 5d29a4ca048a..107c22ce3224 100644
  
  	if (power != sdata->vif.bss_conf.txpower) {
 diff --git a/net/netfilter/Kconfig b/net/netfilter/Kconfig
-index ddc54b6d18ee..8af6d1f8dbb4 100644
+index 8c0fea1bdc8d..0ee41cbc45ab 100644
 --- a/net/netfilter/Kconfig
 +++ b/net/netfilter/Kconfig
-@@ -988,6 +988,14 @@ config NETFILTER_XT_TARGET_NETMAP
+@@ -987,6 +987,14 @@ config NETFILTER_XT_TARGET_NETMAP
  
  	To compile it as a module, choose M here. If unsure, say N.
  
