@@ -1,12 +1,12 @@
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64 b/CONFIGS/xanmod/gcc/config_x86-64
 new file mode 100644
-index 000000000000..9272684f236a
+index 000000000000..79a98f57de8d
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64
 @@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.8 Kernel Configuration
++# Linux/x86 5.19.9 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -11707,13 +11707,13 @@ index 000000000000..9272684f236a
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v2 b/CONFIGS/xanmod/gcc/config_x86-64-v2
 new file mode 100644
-index 000000000000..133016bf8599
+index 000000000000..8810a9f0eaa5
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v2
 @@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.8 Kernel Configuration
++# Linux/x86 5.19.9 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -23414,13 +23414,13 @@ index 000000000000..133016bf8599
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v3 b/CONFIGS/xanmod/gcc/config_x86-64-v3
 new file mode 100644
-index 000000000000..be1eee915292
+index 000000000000..6cd2ce12ebf0
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v3
 @@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.8 Kernel Configuration
++# Linux/x86 5.19.9 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -36021,7 +36021,7 @@ index 08620b9a44fc..534248cdd063 100644
  M:	William Breathitt Gray <vilhelm.gray@gmail.com>
  L:	linux-watchdog@vger.kernel.org
 diff --git a/Makefile b/Makefile
-index e361c6230e9e..6eb0d9d8e7d0 100644
+index 1f27c4bd09e6..c337ffc12ddd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -753,6 +753,136 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
@@ -41048,7 +41048,7 @@ index 64c938ce36fe..c9ffa2bdb535 100644
  	put_task_struct(c);
  }
 diff --git a/kernel/fork.c b/kernel/fork.c
-index 9d44f2d46c69..5b28049c2fb8 100644
+index d587c85f35b1..615d0475cad1 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -109,6 +109,11 @@
@@ -41079,15 +41079,7 @@ index 9d44f2d46c69..5b28049c2fb8 100644
  	mmdrop(mm);
  }
  
-@@ -1225,6 +1232,7 @@ void mmput_async(struct mm_struct *mm)
- 		schedule_work(&mm->async_put_work);
- 	}
- }
-+EXPORT_SYMBOL(mmput_async);
- #endif
- 
- /**
-@@ -1995,6 +2003,10 @@ static __latent_entropy struct task_struct *copy_process(
+@@ -1996,6 +2003,10 @@ static __latent_entropy struct task_struct *copy_process(
  	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
  		return ERR_PTR(-EINVAL);
  
@@ -41098,7 +41090,7 @@ index 9d44f2d46c69..5b28049c2fb8 100644
  	/*
  	 * Thread groups must share signals as well, and detached threads
  	 * can only be started up within the thread group.
-@@ -2676,6 +2688,13 @@ pid_t kernel_clone(struct kernel_clone_args *args)
+@@ -2677,6 +2688,13 @@ pid_t kernel_clone(struct kernel_clone_args *args)
  		get_task_struct(p);
  	}
  
@@ -41112,7 +41104,7 @@ index 9d44f2d46c69..5b28049c2fb8 100644
  	wake_up_new_task(p);
  
  	/* forking complete and child started to run, tell ptracer */
-@@ -3143,6 +3162,12 @@ int ksys_unshare(unsigned long unshare_flags)
+@@ -3144,6 +3162,12 @@ int ksys_unshare(unsigned long unshare_flags)
  	if (unshare_flags & CLONE_NEWNS)
  		unshare_flags |= CLONE_FS;
  
@@ -41502,10 +41494,25 @@ index 4ebaf97f7bd8..93428755779d 100644
  #ifdef CONFIG_PROC_FS
  
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d4af56927a4d..f6d8519af24c 100644
+index d4af56927a4d..7388c7532d50 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -5140,6 +5140,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
+@@ -138,6 +138,14 @@ __read_mostly int sysctl_resched_latency_warn_ms = 100;
+ __read_mostly int sysctl_resched_latency_warn_once = 1;
+ #endif /* CONFIG_SCHED_DEBUG */
+ 
++/*
++ * Choose the yield level that will perform.
++ * 0: No yield.
++ * 1: Yield only to better priority/deadline tasks.
++ * 2: Re-queue current tasks. (default CFS)
++ */
++__read_mostly int sysctl_sched_yield_type = 0;
++
+ /*
+  * Number of tasks to iterate in a single balance run.
+  * Limited because this is done with IRQs disabled.
+@@ -5140,6 +5148,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
  		 * finish_task_switch()'s mmdrop().
  		 */
  		switch_mm_irqs_off(prev->active_mm, next->mm, next);
@@ -41513,7 +41520,7 @@ index d4af56927a4d..f6d8519af24c 100644
  
  		if (!prev->mm) {                        // from kernel
  			/* will mmdrop() in finish_task_switch(). */
-@@ -7036,6 +7037,7 @@ int can_nice(const struct task_struct *p, const int nice)
+@@ -7036,6 +7045,7 @@ int can_nice(const struct task_struct *p, const int nice)
  {
  	return is_nice_reduction(p, nice) || capable(CAP_SYS_NICE);
  }
@@ -41521,6 +41528,23 @@ index d4af56927a4d..f6d8519af24c 100644
  
  #ifdef __ARCH_WANT_SYS_NICE
  
+@@ -8239,10 +8249,15 @@ static void do_sched_yield(void)
+ 	struct rq_flags rf;
+ 	struct rq *rq;
+ 
++	if (!sysctl_sched_yield_type)
++		return;
++
+ 	rq = this_rq_lock_irq(&rf);
+ 
+ 	schedstat_inc(rq->yld_count);
+-	current->sched_class->yield_task(rq);
++
++	if (sysctl_sched_yield_type > 1)
++		current->sched_class->yield_task(rq);
+ 
+ 	preempt_disable();
+ 	rq_unlock_irq(rq, &rf);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
 index 0cba1b2e295b..a7ce45c863ea 100644
 --- a/kernel/sched/fair.c
@@ -41787,10 +41811,18 @@ index 9860bb9a847c..bfba50279d5f 100644
  /*
   * Note: we use "set_current_state()" _after_ the wait-queue add,
 diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 35d034219513..ff4a200ec6d4 100644
+index 35d034219513..5886e908f954 100644
 --- a/kernel/sysctl.c
 +++ b/kernel/sysctl.c
-@@ -134,6 +134,10 @@ int sysctl_legacy_va_layout;
+@@ -91,6 +91,7 @@ static const int six_hundred_forty_kb = 640 * 1024;
+ #endif
+ 
+ 
++extern int sysctl_sched_yield_type;
+ static const int ngroups_max = NGROUPS_MAX;
+ static const int cap_last_cap = CAP_LAST_CAP;
+ 
+@@ -134,6 +135,10 @@ int sysctl_legacy_va_layout;
  static const int max_extfrag_threshold = 1000;
  #endif
  
@@ -41801,10 +41833,19 @@ index 35d034219513..ff4a200ec6d4 100644
  #endif /* CONFIG_SYSCTL */
  
  /*
-@@ -1608,6 +1612,15 @@ static struct ctl_table kern_table[] = {
+@@ -1608,6 +1613,24 @@ static struct ctl_table kern_table[] = {
  		.mode		= 0644,
  		.proc_handler	= proc_dointvec,
  	},
++	{
++		.procname	= "yield_type",
++		.data		= &sysctl_sched_yield_type,
++		.maxlen		= sizeof (int),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec,
++		.extra1		= SYSCTL_ZERO,
++		.extra2		= SYSCTL_TWO,
++	},
 +#ifdef CONFIG_USER_NS
 +	{
 +		.procname	= "unprivileged_userns_clone",
@@ -45810,7 +45851,7 @@ index aab384126f61..83ecd0e61bbf 100644
  	tristate "REDIRECT target support"
  	depends on NETFILTER_ADVANCED
 diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index 3d446773ff2a..a76c5fcf8e1f 100644
+index ab03977b6578..4589ed0182fb 100644
 --- a/net/ipv4/tcp.c
 +++ b/net/ipv4/tcp.c
 @@ -3092,6 +3092,7 @@ int tcp_disconnect(struct sock *sk, int flags)
@@ -48579,7 +48620,7 @@ index d3cae40749e8..0f268f2ff2e9 100644
  		icsk->icsk_ca_ops->init(sk);
  	if (tcp_ca_needs_ecn(sk))
 diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index e5435156e545..5b86583ffc21 100644
+index c30696eafc36..de64dc740b09 100644
 --- a/net/ipv4/tcp_input.c
 +++ b/net/ipv4/tcp_input.c
 @@ -349,7 +349,7 @@ static void __tcp_ecn_check_ce(struct sock *sk, const struct sk_buff *skb)
@@ -48631,7 +48672,7 @@ index e5435156e545..5b86583ffc21 100644
  	/* When we're adding to gso_segs == 1, gso_size will be zero,
  	 * in theory this shouldn't be necessary but as long as DSACK
  	 * code can come after this skb later on it's better to keep
-@@ -3800,6 +3816,7 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
+@@ -3811,6 +3827,7 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
  
  	prior_fack = tcp_is_sack(tp) ? tcp_highest_sack_seq(tp) : tp->snd_una;
  	rs.prior_in_flight = tcp_packets_in_flight(tp);
@@ -48639,7 +48680,7 @@ index e5435156e545..5b86583ffc21 100644
  
  	/* ts_recent update must be made after we are sure that the packet
  	 * is in window.
-@@ -3898,6 +3915,7 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
+@@ -3909,6 +3926,7 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
  	delivered = tcp_newly_delivered(sk, delivered, flag);
  	lost = tp->lost - lost;			/* freshly marked lost */
  	rs.is_ack_delayed = !!(flag & FLAG_ACK_MAYBE_DELAYED);
@@ -48647,7 +48688,7 @@ index e5435156e545..5b86583ffc21 100644
  	tcp_rate_gen(sk, delivered, lost, is_sack_reneg, sack_state.rate);
  	tcp_cong_control(sk, ack, delivered, flag, sack_state.rate);
  	tcp_xmit_recovery(sk, rexmit);
-@@ -5499,13 +5517,14 @@ static void __tcp_ack_snd_check(struct sock *sk, int ofo_possible)
+@@ -5510,13 +5528,14 @@ static void __tcp_ack_snd_check(struct sock *sk, int ofo_possible)
  
  	    /* More than one full frame received... */
  	if (((tp->rcv_nxt - tp->rcv_wup) > inet_csk(sk)->icsk_ack.rcv_mss &&
@@ -50307,7 +50348,7 @@ index af4754a35e66..3edda03c2def 100755
  			fi
  			# If we are past a tagged commit (like
 diff --git a/security/security.c b/security/security.c
-index 188b8f782220..662473196ee6 100644
+index 8b62654ff3f9..5b2475ca76eb 100644
 --- a/security/security.c
 +++ b/security/security.c
 @@ -752,24 +752,28 @@ int security_binder_set_context_mgr(const struct cred *mgr)
