@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .qtmlabs
-%define specversion 5.19.9
+%define specversion 5.19.12
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.9
+%define tarfile_release 5.19.12
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.9
+%define kabiversion 5.19.12
 
 #
 # End of genspec.sh variables
@@ -3142,6 +3142,16 @@ fi
 #
 #
 %changelog
+* Wed Sep 28 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.12-0]
+- Linux v5.19.12
+
+* Fri Sep 23 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.11-0]
+- Linux v5.19.11
+
+* Tue Sep 20 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.10-0]
+- kbuild: Add skip_encoding_btf_enum64 option to pahole (Martin Rodriguez Reboredo)
+- Linux v5.19.10
+
 * Thu Sep 15 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.9-0]
 - Add CONFIG_ARM64_ERRATUM_2457168 as new stable config option (Justin M. Forbes)
 - fedora: disable IWLMEI (Peter Robinson)
