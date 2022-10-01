@@ -1,21 +1,21 @@
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64 b/CONFIGS/xanmod/gcc/config_x86-64
 new file mode 100644
-index 000000000000..79a98f57de8d
+index 000000000000..a0d5959eeb6a
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64
-@@ -0,0 +1,11701 @@
+@@ -0,0 +1,11700 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.9 Kernel Configuration
++# Linux/x86 5.19.12 Kernel Configuration
 +#
-+CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
++CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-3) 12.2.0"
 +CONFIG_CC_IS_GCC=y
 +CONFIG_GCC_VERSION=120200
 +CONFIG_CLANG_VERSION=0
 +CONFIG_AS_IS_GNU=y
-+CONFIG_AS_VERSION=23890
++CONFIG_AS_VERSION=23900
 +CONFIG_LD_IS_BFD=y
-+CONFIG_LD_VERSION=23890
++CONFIG_LD_VERSION=23900
 +CONFIG_LLD_VERSION=0
 +CONFIG_CC_CAN_LINK=y
 +CONFIG_CC_CAN_LINK_STATIC=y
@@ -3949,7 +3949,6 @@ index 000000000000..79a98f57de8d
 +CONFIG_IWLWIFI_DEBUGFS=y
 +# end of Debugging Options
 +
-+CONFIG_IWLMEI=m
 +CONFIG_WLAN_VENDOR_INTERSIL=y
 +CONFIG_HOSTAP=m
 +CONFIG_HOSTAP_FIRMWARE=y
@@ -11707,22 +11706,22 @@ index 000000000000..79a98f57de8d
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v2 b/CONFIGS/xanmod/gcc/config_x86-64-v2
 new file mode 100644
-index 000000000000..8810a9f0eaa5
+index 000000000000..6ffb396fd135
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v2
-@@ -0,0 +1,11701 @@
+@@ -0,0 +1,11700 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.9 Kernel Configuration
++# Linux/x86 5.19.12 Kernel Configuration
 +#
-+CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
++CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-3) 12.2.0"
 +CONFIG_CC_IS_GCC=y
 +CONFIG_GCC_VERSION=120200
 +CONFIG_CLANG_VERSION=0
 +CONFIG_AS_IS_GNU=y
-+CONFIG_AS_VERSION=23890
++CONFIG_AS_VERSION=23900
 +CONFIG_LD_IS_BFD=y
-+CONFIG_LD_VERSION=23890
++CONFIG_LD_VERSION=23900
 +CONFIG_LLD_VERSION=0
 +CONFIG_CC_CAN_LINK=y
 +CONFIG_CC_CAN_LINK_STATIC=y
@@ -15656,7 +15655,6 @@ index 000000000000..8810a9f0eaa5
 +CONFIG_IWLWIFI_DEBUGFS=y
 +# end of Debugging Options
 +
-+CONFIG_IWLMEI=m
 +CONFIG_WLAN_VENDOR_INTERSIL=y
 +CONFIG_HOSTAP=m
 +CONFIG_HOSTAP_FIRMWARE=y
@@ -23414,22 +23412,22 @@ index 000000000000..8810a9f0eaa5
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v3 b/CONFIGS/xanmod/gcc/config_x86-64-v3
 new file mode 100644
-index 000000000000..6cd2ce12ebf0
+index 000000000000..df2c64ccaeff
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v3
-@@ -0,0 +1,11701 @@
+@@ -0,0 +1,11700 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.9 Kernel Configuration
++# Linux/x86 5.19.12 Kernel Configuration
 +#
-+CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-1) 12.2.0"
++CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-3) 12.2.0"
 +CONFIG_CC_IS_GCC=y
 +CONFIG_GCC_VERSION=120200
 +CONFIG_CLANG_VERSION=0
 +CONFIG_AS_IS_GNU=y
-+CONFIG_AS_VERSION=23890
++CONFIG_AS_VERSION=23900
 +CONFIG_LD_IS_BFD=y
-+CONFIG_LD_VERSION=23890
++CONFIG_LD_VERSION=23900
 +CONFIG_LLD_VERSION=0
 +CONFIG_CC_CAN_LINK=y
 +CONFIG_CC_CAN_LINK_STATIC=y
@@ -27363,7 +27361,6 @@ index 000000000000..6cd2ce12ebf0
 +CONFIG_IWLWIFI_DEBUGFS=y
 +# end of Debugging Options
 +
-+CONFIG_IWLMEI=m
 +CONFIG_WLAN_VENDOR_INTERSIL=y
 +CONFIG_HOSTAP=m
 +CONFIG_HOSTAP_FIRMWARE=y
@@ -36021,7 +36018,7 @@ index 08620b9a44fc..534248cdd063 100644
  M:	William Breathitt Gray <vilhelm.gray@gmail.com>
  L:	linux-watchdog@vger.kernel.org
 diff --git a/Makefile b/Makefile
-index 1f27c4bd09e6..c337ffc12ddd 100644
+index 7df4c195c8ab..40501f6a4d8d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -753,6 +753,136 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
@@ -39580,7 +39577,7 @@ index 0e537e580dc1..5d36015071d2 100644
  		return 1;
  	}
 diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 62e3ff52ab03..b7f76e2ecb03 100644
+index 83eb8869a8c9..37475bee810e 100644
 --- a/include/linux/blkdev.h
 +++ b/include/linux/blkdev.h
 @@ -578,6 +578,7 @@ struct request_queue {
@@ -41885,7 +41882,7 @@ index 5481ba44a8d6..2a4b1e22a422 100644
  static DEFINE_MUTEX(userns_state_mutex);
  
 diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 2e24db4bff19..c4f716fcc5d7 100644
+index c399ab486557..fb9f6c3bdacb 100644
 --- a/lib/Kconfig.debug
 +++ b/lib/Kconfig.debug
 @@ -190,7 +190,7 @@ config DYNAMIC_DEBUG_CORE
