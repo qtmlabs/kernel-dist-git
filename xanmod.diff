@@ -1,12 +1,12 @@
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64 b/CONFIGS/xanmod/gcc/config_x86-64
 new file mode 100644
-index 000000000000..a0d5959eeb6a
+index 000000000000..c49d49582ad0
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64
-@@ -0,0 +1,11700 @@
+@@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.12 Kernel Configuration
++# Linux/x86 5.19.15 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-3) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -10940,6 +10940,7 @@ index 000000000000..a0d5959eeb6a
 +# Memory initialization
 +#
 +CONFIG_CC_HAS_AUTO_VAR_INIT_PATTERN=y
++CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_BARE=y
 +CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO=y
 +CONFIG_INIT_STACK_NONE=y
 +# CONFIG_INIT_STACK_ALL_PATTERN is not set
@@ -11706,13 +11707,13 @@ index 000000000000..a0d5959eeb6a
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v2 b/CONFIGS/xanmod/gcc/config_x86-64-v2
 new file mode 100644
-index 000000000000..6ffb396fd135
+index 000000000000..daf7f16fc83c
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v2
-@@ -0,0 +1,11700 @@
+@@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.12 Kernel Configuration
++# Linux/x86 5.19.15 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-3) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -22646,6 +22647,7 @@ index 000000000000..6ffb396fd135
 +# Memory initialization
 +#
 +CONFIG_CC_HAS_AUTO_VAR_INIT_PATTERN=y
++CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_BARE=y
 +CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO=y
 +CONFIG_INIT_STACK_NONE=y
 +# CONFIG_INIT_STACK_ALL_PATTERN is not set
@@ -23412,13 +23414,13 @@ index 000000000000..6ffb396fd135
 +# end of Kernel hacking
 diff --git a/CONFIGS/xanmod/gcc/config_x86-64-v3 b/CONFIGS/xanmod/gcc/config_x86-64-v3
 new file mode 100644
-index 000000000000..df2c64ccaeff
+index 000000000000..f5499249789e
 --- /dev/null
 +++ b/CONFIGS/xanmod/gcc/config_x86-64-v3
-@@ -0,0 +1,11700 @@
+@@ -0,0 +1,11701 @@
 +#
 +# Automatically generated file; DO NOT EDIT.
-+# Linux/x86 5.19.12 Kernel Configuration
++# Linux/x86 5.19.15 Kernel Configuration
 +#
 +CONFIG_CC_VERSION_TEXT="gcc-12 (Debian 12.2.0-3) 12.2.0"
 +CONFIG_CC_IS_GCC=y
@@ -34352,6 +34354,7 @@ index 000000000000..df2c64ccaeff
 +# Memory initialization
 +#
 +CONFIG_CC_HAS_AUTO_VAR_INIT_PATTERN=y
++CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_BARE=y
 +CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO=y
 +CONFIG_INIT_STACK_NONE=y
 +# CONFIG_INIT_STACK_ALL_PATTERN is not set
@@ -36018,7 +36021,7 @@ index 08620b9a44fc..534248cdd063 100644
  M:	William Breathitt Gray <vilhelm.gray@gmail.com>
  L:	linux-watchdog@vger.kernel.org
 diff --git a/Makefile b/Makefile
-index 7df4c195c8ab..40501f6a4d8d 100644
+index af05237987ef..e3f226a8bc8d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -753,6 +753,136 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
@@ -42034,7 +42037,7 @@ index 618c366a2f07..84f3707667bc 100644
  	.post_attach = mem_cgroup_move_task,
  	.dfl_cftypes = memory_files,
 diff --git a/mm/memory.c b/mm/memory.c
-index 1c6027adc542..fc0277a4da8c 100644
+index e644f6fad389..0a5da1d5d47d 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
 @@ -125,18 +125,6 @@ int randomize_va_space __read_mostly =
@@ -42073,7 +42076,7 @@ index 1c6027adc542..fc0277a4da8c 100644
  		pte_t entry;
  
  		vmf->pte = pte_offset_map_lock(mm, vmf->pmd, addr, &vmf->ptl);
-@@ -5107,6 +5096,27 @@ static inline void mm_account_fault(struct pt_regs *regs,
+@@ -5113,6 +5102,27 @@ static inline void mm_account_fault(struct pt_regs *regs,
  		perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS_MIN, 1, regs, address);
  }
  
@@ -42101,7 +42104,7 @@ index 1c6027adc542..fc0277a4da8c 100644
  /*
   * By the time we get here, we already hold the mm semaphore
   *
-@@ -5138,11 +5148,15 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+@@ -5144,11 +5154,15 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
  	if (flags & FAULT_FLAG_USER)
  		mem_cgroup_enter_user_fault();
  
