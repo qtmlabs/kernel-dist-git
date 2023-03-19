@@ -1,0 +1,24 @@
+jobs:
+  - job: build_kernel
+    timeoutInMinutes: 0
+    pool:
+      vmImage: ubuntu-latest
+    container: 'registry.fedoraproject.org/fedora-toolbox:37'
+    steps:
+      - script: |
+          set -exuo pipefail
+          git fetch --unshallow origin
+          sudo dnf install -y fedpkg '@Development Tools' '@RPM Development Tools'
+          fedpkg clone -a -b f37 kernel reposrc
+          cd reposrc
+          git fetch .. HEAD
+          git reset --hard FETCH_HEAD
+          sudo dnf builddep -y ./kernel.spec
+          fedpkg local --with baseonly --without configchecks
+          cd ..
+          mkdir -p rpms
+          mv reposrc/*.rpm reposrc/*/*.rpm rpms
+      - publish: rpms
+        artifact: rpms
+
+# vim: sw=2 expandtab:
