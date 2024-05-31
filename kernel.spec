@@ -159,7 +159,7 @@ Summary: The Linux kernel
 #  to build the base kernel using the debug configuration. (Specifying
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
-# define buildid .local
+%define buildid .qtmlabs
 %define specrpmversion 6.8.12
 %define specversion 6.8.12
 %define patchversion 6.8
@@ -240,7 +240,7 @@ Summary: The Linux kernel
 # Additional options for user-friendly one-off kernel building:
 #
 # Only build the base kernel (--with baseonly):
-%define with_baseonly  %{?_with_baseonly:     1} %{?!_with_baseonly:     0}
+%define with_baseonly  %{?_without_baseonly:     0} %{?!_without_baseonly:     1}
 # Only build the debug variants (--with dbgonly):
 %define with_dbgonly   %{?_with_dbgonly:      1} %{?!_with_dbgonly:      0}
 # Only build the realtime kernel (--with rtonly):
@@ -274,7 +274,7 @@ Summary: The Linux kernel
 
 #
 # check for mismatched config options
-%define with_configchecks %{?_without_configchecks:        0} %{?!_without_configchecks:        1}
+%define with_configchecks %{?_with_configchecks:        1} %{?!_with_configchecks:        0}
 
 #
 # gcov support
@@ -984,6 +984,7 @@ Patch1: patch-%{patchversion}-redhat.patch
 
 # empty final patch to facilitate testing of kernel patches
 Patch999999: linux-kernel-test.patch
+Patch1000001: qtmlabs.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -1801,6 +1802,7 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
+ApplyOptionalPatch qtmlabs.patch
 
 %{log_msg "End of patch applications"}
 # END OF PATCH APPLICATIONS
