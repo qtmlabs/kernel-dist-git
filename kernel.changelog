@@ -1,3 +1,38 @@
+* Wed Sep 18 2024 Augusto Caringi <acaringi@redhat.com> [6.10.11-0]
+- New config for 6.10.11 (Augusto Caringi)
+- Linux v6.10.11
+Resolves: 
+
+* Thu Sep 12 2024 Augusto Caringi <acaringi@redhat.com> [6.10.10-0]
+- Add entry for BugsFixed (Justin M. Forbes)
+- drm/nouveau/fb: restore init() for ramgp102 (Ben Skeggs)
+- Linux v6.10.10
+Resolves: 
+
+* Sun Sep 08 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.9-0]
+- Linux v6.10.9
+Resolves: 
+
+* Wed Sep 04 2024 Augusto Caringi <acaringi@redhat.com> [6.10.8-0]
+- Add to BugsFixed (Augusto Caringi)
+- xfs: xfs_finobt_count_blocks() walks the wrong btree (Dave Chinner)
+- Linux v6.10.8
+Resolves: 
+
+* Thu Aug 29 2024 Augusto Caringi <acaringi@redhat.com> [6.10.7-0]
+- KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHPKEYR in sync (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV: Add one-reg interface for HASHPKEYR register (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHKEYR in sync (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV: Add one-reg interface for HASHKEYR register (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV nestedv2: Keep nested guest DEXCR in sync (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV: Add one-reg interface for DEXCR register (Shivaprasad G Bhat)
+- Revert the F39 commits which should not have pushed (Justin M. Forbes)
+- Turn off libbpf dynamic for perf on F39 (Justin M. Forbes)
+- Revert "cpupower: Bump soname version" (Justin M. Forbes)
+- Drop soname for libcpupower.so since we reverted the bump (Justin M. Forbes)
+- Linux v6.10.7
+Resolves: 
+
 * Mon Aug 19 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.6-0]
 - Add to BugsFixed (Justin M. Forbes)
 - selinux: revert our use of vma_is_initial_heap() (Paul Moore)
