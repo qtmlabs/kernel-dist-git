@@ -39,3 +39,66 @@ index 94c94db3faf6..9e4f51c1e2af 100644
 -- 
 2.39.2
 
+From 5b606b7a7f005406859431753bff719623b448c3 Mon Sep 17 00:00:00 2001
+From: msizanoen <msizanoen@qtmlabs.xyz>
+Date: Thu, 26 Sep 2024 10:50:21 +0200
+Subject: [PATCH] Bluetooth: btmtk: Firmware loading support for MT7902
+
+Firmware must be obtained separately.
+
+---
+Copyright (C) 2024 QTM Labs. CONFIDENTIAL AND PROPRIETARY. DO NOT REDISTRIBUTE.
+
+ drivers/bluetooth/btmtk.c | 1 +
+ drivers/bluetooth/btmtk.h | 1 +
+ drivers/bluetooth/btusb.c | 6 ++++++
+ 3 files changed, 8 insertions(+)
+
+diff --git a/drivers/bluetooth/btmtk.c b/drivers/bluetooth/btmtk.c
+index 812fd2a8f853..63fa562fde43 100644
+--- a/drivers/bluetooth/btmtk.c
++++ b/drivers/bluetooth/btmtk.c
+@@ -424,3 +424,4 @@ MODULE_FIRMWARE(FIRMWARE_MT7668);
+ MODULE_FIRMWARE(FIRMWARE_MT7922);
+ MODULE_FIRMWARE(FIRMWARE_MT7961);
+ MODULE_FIRMWARE(FIRMWARE_MT7925);
++MODULE_FIRMWARE(FIRMWARE_MT7902);
+diff --git a/drivers/bluetooth/btmtk.h b/drivers/bluetooth/btmtk.h
+index cbcdb99a22e6..651496f077c6 100644
+--- a/drivers/bluetooth/btmtk.h
++++ b/drivers/bluetooth/btmtk.h
+@@ -7,6 +7,7 @@
+ #define FIRMWARE_MT7922		"mediatek/BT_RAM_CODE_MT7922_1_1_hdr.bin"
+ #define FIRMWARE_MT7961		"mediatek/BT_RAM_CODE_MT7961_1_2_hdr.bin"
+ #define FIRMWARE_MT7925		"mediatek/mt7925/BT_RAM_CODE_MT7925_1_1_hdr.bin"
++#define FIRMWARE_MT7902		"mediatek/BT_RAM_CODE_MT7902_1_1_hdr.bin"
+ 
+ #define HCI_EV_WMT 0xe4
+ #define HCI_WMT_MAX_EVENT_SIZE		64
+diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+index 0927f51867c2..a1a429e31ec7 100644
+--- a/drivers/bluetooth/btusb.c
++++ b/drivers/bluetooth/btusb.c
+@@ -696,6 +696,11 @@ static const struct usb_device_id quirks_table[] = {
+ 						     BTUSB_WIDEBAND_SPEECH |
+ 						     BTUSB_VALID_LE_STATES },
+ 
++	/* MediaTek MT7902 Bluetooth devices */
++	{ USB_DEVICE(0x13d3, 0x3579), .driver_info = BTUSB_MEDIATEK |
++		                                     BTUSB_WIDEBAND_SPEECH |
++						     BTUSB_VALID_LE_STATES },
++
+ 	/* Additional Realtek 8723AE Bluetooth devices */
+ 	{ USB_DEVICE(0x0930, 0x021d), .driver_info = BTUSB_REALTEK },
+ 	{ USB_DEVICE(0x13d3, 0x3394), .driver_info = BTUSB_REALTEK },
+@@ -3170,6 +3175,7 @@ static int btusb_mtk_setup(struct hci_dev *hdev)
+ 	case 0x7922:
+ 	case 0x7961:
+ 	case 0x7925:
++	case 0x7902:
+ 		if (dev_id == 0x7925)
+ 			snprintf(fw_bin_name, sizeof(fw_bin_name),
+ 				 "mediatek/mt%04x/BT_RAM_CODE_MT%04x_1_%x_hdr.bin",
+-- 
+2.45.2
+
