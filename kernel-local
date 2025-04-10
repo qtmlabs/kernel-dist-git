@@ -1,2 +1,7 @@
 # This file is intentionally left empty in the stock kernel. Its a nicety
 # added for those wanting to do custom rebuilds with altered config opts.
+CONFIG_PREEMPT=y
+# CONFIG_DRM_AUTO_MASTER is not set
+# CONFIG_LOCK_DOWN_IN_EFI_SECURE_BOOT is not set
+# CONFIG_PREEMPT_LAZY is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
