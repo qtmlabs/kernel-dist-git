@@ -1,4 +1,4 @@
-From e039ed05b2548c9d20f486d3f1cc88c8ce9c087a Mon Sep 17 00:00:00 2001
+From 7a1bfa5e51d4714e36d25729ac4b22ee3db1789f Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Thu, 10 Apr 2025 21:38:59 +0700
 Subject: [PATCH 1/3] Revert "xhci: prevent bus suspend if a roothub port
@@ -40,7 +40,7 @@ index 69c278b64084..7ed768ea86c6 100644
 2.49.0
 
 
-From 3534f04ffdb8f9c1bd24eb25ca63d3ba3fbeab0a Mon Sep 17 00:00:00 2001
+From ee4cc107fdc95c7530573b1736a5b2634a3effb7 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Thu, 10 Apr 2025 21:39:04 +0700
 Subject: [PATCH 2/3] Bluetooth: btmtk: Firmware loading support for MT7902
@@ -99,9 +99,9 @@ index 75dbe07e07e2..1ff8e16a63ec 100644
 2.49.0
 
 
-From 640d360008390efb89d6a7098225da2c415df294 Mon Sep 17 00:00:00 2001
+From 18b756087782eea58ffd67ed8c84ca841d245564 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
-Date: Thu, 10 Apr 2025 21:39:05 +0700
+Date: Sun, 6 Apr 2025 11:45:22 +0700
 Subject: [PATCH 3/3] x86/e820: Fix handling of subpage regions when
  calculating nosave ranges in e820__register_nosave_regions()
 
@@ -146,6 +146,7 @@ Cc: Len Brown <len.brown@intel.com>
 Cc: stable@vger.kernel.org
 Link: https://lore.kernel.org/r/20250406-fix-e820-nosave-v3-1-f3787bc1ee1d@qtmlabs.xyz
 Closes: https://lore.kernel.org/all/Z4WFjBVHpndct7br@desktop0a/
+(cherry picked from commit f2f29da9f0d4367f6ff35e0d9d021257bb53e273)
 ---
  arch/x86/kernel/e820.c | 17 ++++++++---------
  1 file changed, 8 insertions(+), 9 deletions(-)
