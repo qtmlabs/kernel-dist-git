@@ -1,7 +1,7 @@
-From 066a9e85a6db4c8ba4ab6d4248e31444120d157c Mon Sep 17 00:00:00 2001
+From a78e1496fe797f4fed7968d91e7d9d03efeb13dc Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Thu, 10 Apr 2025 21:39:04 +0700
-Subject: [PATCH 1/4] Bluetooth: btmtk: Firmware loading support for MT7902
+Subject: [PATCH 1/5] Bluetooth: btmtk: Firmware loading support for MT7902
 
 ---
  drivers/bluetooth/btmtk.c | 2 ++
@@ -54,13 +54,13 @@ index ef9689f87769..84a2febdfb5e 100644
  	{ USB_DEVICE(0x0930, 0x021d), .driver_info = BTUSB_REALTEK },
  	{ USB_DEVICE(0x13d3, 0x3394), .driver_info = BTUSB_REALTEK },
 -- 
-2.50.0
+2.50.1
 
 
-From dbfbe00468feda218ef7edcbfb80e0522d8f760a Mon Sep 17 00:00:00 2001
+From 00b4652f023234e272cf12f2e32a3a20ebeeffc2 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Wed, 2 Jul 2025 17:30:49 +0700
-Subject: [PATCH 2/4] vt: keyboard: Don't process Unicode characters in K_OFF
+Subject: [PATCH 2/5] vt: keyboard: Don't process Unicode characters in K_OFF
  mode
 
 We don't process Unicode characters if the virtual terminal is in raw
@@ -89,13 +89,13 @@ index ae92e6a50a65..f6161c3c1885 100644
  		return;
  	}
 -- 
-2.50.0
+2.50.1
 
 
-From 5387288ccfc44656eb79dd55793a908e2ae7a239 Mon Sep 17 00:00:00 2001
+From 2e523f27938c1b9b97c8cc958051198a96582049 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Wed, 2 Jul 2025 18:53:07 +0700
-Subject: [PATCH 3/4] vt: defkeymap: Map keycodes above 127 to K_HOLE
+Subject: [PATCH 3/5] vt: defkeymap: Map keycodes above 127 to K_HOLE
 
 The maximum number of keycodes got bumped to 256 a very long time ago,
 but the default keymaps were never adjusted to match. This is causing
@@ -277,13 +277,13 @@ index 0c043e4f292e..6af7bf8d5460 100644
  
  unsigned short *key_maps[MAX_NR_KEYMAPS] = {
 -- 
-2.50.0
+2.50.1
 
 
-From b0ae7dbc751456680ff98057a8a4146c2df273df Mon Sep 17 00:00:00 2001
+From e1c4b69aa97e0be1164e59e532aa7e69834f4074 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 7 Jul 2025 10:43:40 +0700
-Subject: [PATCH 4/4] drm: Allow disabling automatic DRM master acquisition
+Subject: [PATCH 4/5] drm: Allow disabling automatic DRM master acquisition
  semantics
 
 ---
@@ -408,5 +408,30 @@ index 22aa015df387..7bd65b5604e7 100644
  		spin_lock(&file_priv->master_lookup_lock);
  		file_priv->master = drm_master_get(dev->master);
 -- 
-2.50.0
+2.50.1
+
+
+From 62902f1f2173f8b0d55a5e1d503d361fbb396c30 Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Sat, 19 Jul 2025 10:12:06 +0700
+Subject: [PATCH 5/5] typec: Update power_supply on power role change
+
+---
+ drivers/usb/typec/ucsi/ucsi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/usb/typec/ucsi/ucsi.c b/drivers/usb/typec/ucsi/ucsi.c
+index 01ce858a1a2b..8ff31963970b 100644
+--- a/drivers/usb/typec/ucsi/ucsi.c
++++ b/drivers/usb/typec/ucsi/ucsi.c
+@@ -1246,6 +1246,7 @@ static void ucsi_handle_connector_change(struct work_struct *work)
+ 
+ 	if (change & UCSI_CONSTAT_POWER_DIR_CHANGE) {
+ 		typec_set_pwr_role(con->port, role);
++		ucsi_port_psy_changed(con);
+ 
+ 		/* Complete pending power role swap */
+ 		if (!completion_done(&con->complete))
+-- 
+2.50.1
 
