@@ -159,18 +159,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .qtmlabs
-%define specrpmversion 6.15.8
-%define specversion 6.15.8
+%define specrpmversion 6.15.9
+%define specversion 6.15.9
 %define patchversion 6.15
-%define pkgrelease 200
+%define pkgrelease 201
 %define kversion 6
-%define tarfile_release 6.15.8
+%define tarfile_release 6.15.9
 # This is needed to do merge window version magic
 %define patchlevel 15
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 200%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.15.8
+%define kabiversion 6.15.9
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4263,6 +4263,12 @@ fi\
 #
 #
 %changelog
+* Sat Aug 02 2025 Justin M. Forbes <jforbes@fedoraproject.org> [6.15.9-201]
+- btrfs: fix log tree replay failure due to file with 0 links and extents (Filipe Manana)
+
+* Fri Aug 01 2025 Augusto Caringi <acaringi@redhat.com> [6.15.9-0]
+- Linux v6.15.9
+
 * Thu Jul 24 2025 Augusto Caringi <acaringi@redhat.com> [6.15.8-0]
 - Linux v6.15.8
 
