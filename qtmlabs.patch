@@ -1,7 +1,7 @@
-From a78e1496fe797f4fed7968d91e7d9d03efeb13dc Mon Sep 17 00:00:00 2001
+From 69fa27eca8938cbb719b2e62de46e6d74c789bfd Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Thu, 10 Apr 2025 21:39:04 +0700
-Subject: [PATCH 1/5] Bluetooth: btmtk: Firmware loading support for MT7902
+Subject: [PATCH 1/4] Bluetooth: btmtk: Firmware loading support for MT7902
 
 ---
  drivers/bluetooth/btmtk.c | 2 ++
@@ -39,10 +39,10 @@ index 5df7c3296624..1fc40b2874ed 100644
  #define HCI_EV_WMT 0xe4
  #define HCI_WMT_MAX_EVENT_SIZE		64
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index ef9689f87769..84a2febdfb5e 100644
+index 9efdd111baf5..9df4584c3ee5 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
-@@ -724,6 +724,10 @@ static const struct usb_device_id quirks_table[] = {
+@@ -733,6 +733,10 @@ static const struct usb_device_id quirks_table[] = {
  	{ USB_DEVICE(0x13d3, 0x3630), .driver_info = BTUSB_MEDIATEK |
  						     BTUSB_WIDEBAND_SPEECH },
  
@@ -54,13 +54,13 @@ index ef9689f87769..84a2febdfb5e 100644
  	{ USB_DEVICE(0x0930, 0x021d), .driver_info = BTUSB_REALTEK },
  	{ USB_DEVICE(0x13d3, 0x3394), .driver_info = BTUSB_REALTEK },
 -- 
-2.50.1
+2.51.0
 
 
-From 00b4652f023234e272cf12f2e32a3a20ebeeffc2 Mon Sep 17 00:00:00 2001
+From c3cbe5dde383b0aec18c22e52bec4680fb3017ef Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Wed, 2 Jul 2025 17:30:49 +0700
-Subject: [PATCH 2/5] vt: keyboard: Don't process Unicode characters in K_OFF
+Subject: [PATCH 2/4] vt: keyboard: Don't process Unicode characters in K_OFF
  mode
 
 We don't process Unicode characters if the virtual terminal is in raw
@@ -76,10 +76,10 @@ Cc: stable@vger.kernel.org
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/tty/vt/keyboard.c b/drivers/tty/vt/keyboard.c
-index ae92e6a50a65..f6161c3c1885 100644
+index dc585079c2fb..ee1d9c448c7e 100644
 --- a/drivers/tty/vt/keyboard.c
 +++ b/drivers/tty/vt/keyboard.c
-@@ -1494,7 +1494,7 @@ static void kbd_keycode(unsigned int keycode, int down, bool hw_raw)
+@@ -1487,7 +1487,7 @@ static void kbd_keycode(unsigned int keycode, int down, bool hw_raw)
  		rc = atomic_notifier_call_chain(&keyboard_notifier_list,
  						KBD_UNICODE, &param);
  		if (rc != NOTIFY_STOP)
@@ -89,13 +89,13 @@ index ae92e6a50a65..f6161c3c1885 100644
  		return;
  	}
 -- 
-2.50.1
+2.51.0
 
 
-From 2e523f27938c1b9b97c8cc958051198a96582049 Mon Sep 17 00:00:00 2001
+From 3ac34fea0b798354796f68704827b9057d8f33f5 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Wed, 2 Jul 2025 18:53:07 +0700
-Subject: [PATCH 3/5] vt: defkeymap: Map keycodes above 127 to K_HOLE
+Subject: [PATCH 3/4] vt: defkeymap: Map keycodes above 127 to K_HOLE
 
 The maximum number of keycodes got bumped to 256 a very long time ago,
 but the default keymaps were never adjusted to match. This is causing
@@ -277,13 +277,13 @@ index 0c043e4f292e..6af7bf8d5460 100644
  
  unsigned short *key_maps[MAX_NR_KEYMAPS] = {
 -- 
-2.50.1
+2.51.0
 
 
-From e1c4b69aa97e0be1164e59e532aa7e69834f4074 Mon Sep 17 00:00:00 2001
+From ca4389dc027b1d6579af869d9be677c21b43db81 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 7 Jul 2025 10:43:40 +0700
-Subject: [PATCH 4/5] drm: Allow disabling automatic DRM master acquisition
+Subject: [PATCH 4/4] drm: Allow disabling automatic DRM master acquisition
  semantics
 
 ---
@@ -292,10 +292,10 @@ Subject: [PATCH 4/5] drm: Allow disabling automatic DRM master acquisition
  2 files changed, 35 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index f01925ed8176..2ad3f4d2f1c6 100644
+index f7ea8e895c0c..95d9aa7bdc11 100644
 --- a/drivers/gpu/drm/Kconfig
 +++ b/drivers/gpu/drm/Kconfig
-@@ -28,6 +28,23 @@ menuconfig DRM
+@@ -33,6 +33,23 @@ endmenu
  
  if DRM
  
@@ -408,30 +408,5 @@ index 22aa015df387..7bd65b5604e7 100644
  		spin_lock(&file_priv->master_lookup_lock);
  		file_priv->master = drm_master_get(dev->master);
 -- 
-2.50.1
-
-
-From 62902f1f2173f8b0d55a5e1d503d361fbb396c30 Mon Sep 17 00:00:00 2001
-From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
-Date: Sat, 19 Jul 2025 10:12:06 +0700
-Subject: [PATCH 5/5] typec: Update power_supply on power role change
-
----
- drivers/usb/typec/ucsi/ucsi.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/usb/typec/ucsi/ucsi.c b/drivers/usb/typec/ucsi/ucsi.c
-index 01ce858a1a2b..8ff31963970b 100644
---- a/drivers/usb/typec/ucsi/ucsi.c
-+++ b/drivers/usb/typec/ucsi/ucsi.c
-@@ -1246,6 +1246,7 @@ static void ucsi_handle_connector_change(struct work_struct *work)
- 
- 	if (change & UCSI_CONSTAT_POWER_DIR_CHANGE) {
- 		typec_set_pwr_role(con->port, role);
-+		ucsi_port_psy_changed(con);
- 
- 		/* Complete pending power role swap */
- 		if (!completion_done(&con->complete))
--- 
-2.50.1
+2.51.0
 
