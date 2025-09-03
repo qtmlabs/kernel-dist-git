@@ -1,7 +1,7 @@
-From bf74aeaad944edfdcc32edf824145bf7d66e489a Mon Sep 17 00:00:00 2001
+From 376c947ddb2b351ffd7dfa8a9487da9db1a224c3 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Thu, 10 Apr 2025 21:39:04 +0700
-Subject: [PATCH 1/2] Bluetooth: btmtk: Firmware loading support for MT7902
+Subject: [PATCH 1/4] Bluetooth: btmtk: Firmware loading support for MT7902
 
 ---
  drivers/bluetooth/btmtk.c | 2 ++
@@ -57,10 +57,10 @@ index 9efdd111baf5..9df4584c3ee5 100644
 2.51.0
 
 
-From 88b4eb36a3bb4d39630617c2d280fc26e75ff3d3 Mon Sep 17 00:00:00 2001
+From 9d76874d3a68594e0b6a58a64cd12ad58319955f Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 7 Jul 2025 10:43:40 +0700
-Subject: [PATCH 2/2] drm: Allow disabling automatic DRM master acquisition
+Subject: [PATCH 2/4] drm: Allow disabling automatic DRM master acquisition
  semantics
 
 ---
@@ -184,6 +184,183 @@ index 22aa015df387..7bd65b5604e7 100644
  	} else {
  		spin_lock(&file_priv->master_lookup_lock);
  		file_priv->master = drm_master_get(dev->master);
+-- 
+2.51.0
+
+
+From 83861a31135d1db494c25ea8c84d84d6f593a898 Mon Sep 17 00:00:00 2001
+From: Oscar Maes <oscmaes92@gmail.com>
+Date: Wed, 27 Aug 2025 08:23:21 +0200
+Subject: [PATCH 3/4] net: ipv4: fix regression in local-broadcast routes
+
+Commit 9e30ecf23b1b ("net: ipv4: fix incorrect MTU in broadcast routes")
+introduced a regression where local-broadcast packets would have their
+gateway set in __mkroute_output, which was caused by fi = NULL being
+removed.
+
+Fix this by resetting the fib_info for local-broadcast packets. This
+preserves the intended changes for directed-broadcast packets.
+
+Cc: stable@vger.kernel.org
+Fixes: 9e30ecf23b1b ("net: ipv4: fix incorrect MTU in broadcast routes")
+Reported-by: Brett A C Sheffield <bacs@librecast.net>
+Closes: https://lore.kernel.org/regressions/20250822165231.4353-4-bacs@librecast.net
+Signed-off-by: Oscar Maes <oscmaes92@gmail.com>
+Reviewed-by: David Ahern <dsahern@kernel.org>
+---
+ net/ipv4/route.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+index 7b8e80c4f1d9..bf82434c3541 100644
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -2573,12 +2573,16 @@ static struct rtable *__mkroute_output(const struct fib_result *res,
+ 		    !netif_is_l3_master(dev_out))
+ 			return ERR_PTR(-EINVAL);
+ 
+-	if (ipv4_is_lbcast(fl4->daddr))
++	if (ipv4_is_lbcast(fl4->daddr)) {
+ 		type = RTN_BROADCAST;
+-	else if (ipv4_is_multicast(fl4->daddr))
++
++		/* reset fi to prevent gateway resolution */
++		fi = NULL;
++	} else if (ipv4_is_multicast(fl4->daddr)) {
+ 		type = RTN_MULTICAST;
+-	else if (ipv4_is_zeronet(fl4->daddr))
++	} else if (ipv4_is_zeronet(fl4->daddr)) {
+ 		return ERR_PTR(-EINVAL);
++	}
+ 
+ 	if (dev_out->flags & IFF_LOOPBACK)
+ 		flags |= RTCF_LOCAL;
+-- 
+2.51.0
+
+
+From 0170aef17a41648d92b30528b9e1ecf41f73dc61 Mon Sep 17 00:00:00 2001
+From: Oscar Maes <oscmaes92@gmail.com>
+Date: Wed, 27 Aug 2025 08:23:22 +0200
+Subject: [PATCH 4/4] selftests: net: add test for destination in broadcast
+ packets
+
+Add test to check the broadcast ethernet destination field is set
+correctly.
+
+This test sends a broadcast ping, captures it using tcpdump and
+ensures that all bits of the 6 octet ethernet destination address
+are correctly set by examining the output capture file.
+
+Signed-off-by: Oscar Maes <oscmaes92@gmail.com>
+Co-Authored-By: Brett A C Sheffield <bacs@librecast.net>
+Link: https://lore.kernel.org/stable/20250827062322.4807-2-oscmaes92%40gmail.com
+---
+ tools/testing/selftests/net/Makefile          |  1 +
+ .../selftests/net/broadcast_ether_dst.sh      | 82 +++++++++++++++++++
+ 2 files changed, 83 insertions(+)
+ create mode 100755 tools/testing/selftests/net/broadcast_ether_dst.sh
+
+diff --git a/tools/testing/selftests/net/Makefile b/tools/testing/selftests/net/Makefile
+index 332f387615d7..32ccfb0f137e 100644
+--- a/tools/testing/selftests/net/Makefile
++++ b/tools/testing/selftests/net/Makefile
+@@ -112,6 +112,7 @@ TEST_PROGS += skf_net_off.sh
+ TEST_GEN_FILES += skf_net_off
+ TEST_GEN_FILES += tfo
+ TEST_PROGS += tfo_passive.sh
++TEST_PROGS += broadcast_ether_dst.sh
+ 
+ # YNL files, must be before "include ..lib.mk"
+ YNL_GEN_FILES := busy_poller netlink-dumps
+diff --git a/tools/testing/selftests/net/broadcast_ether_dst.sh b/tools/testing/selftests/net/broadcast_ether_dst.sh
+new file mode 100755
+index 000000000000..865b5c7c8c8a
+--- /dev/null
++++ b/tools/testing/selftests/net/broadcast_ether_dst.sh
+@@ -0,0 +1,82 @@
++#!/bin/bash
++# SPDX-License-Identifier: GPL-2.0
++#
++# Author: Brett A C Sheffield <bacs@librecast.net>
++# Author: Oscar Maes <oscmaes92@gmail.com>
++#
++# Ensure destination ethernet field is correctly set for
++# broadcast packets
++
++source lib.sh
++
++CLIENT_IP4="192.168.0.1"
++GW_IP4="192.168.0.2"
++
++setup() {
++	setup_ns CLIENT_NS SERVER_NS
++
++	ip -net "${SERVER_NS}" link add link1 type veth \
++		peer name link0 netns "${CLIENT_NS}"
++
++	ip -net "${CLIENT_NS}" link set link0 up
++	ip -net "${CLIENT_NS}" addr add "${CLIENT_IP4}"/24 dev link0
++
++	ip -net "${SERVER_NS}" link set link1 up
++
++	ip -net "${CLIENT_NS}" route add default via "${GW_IP4}"
++	ip netns exec "${CLIENT_NS}" arp -s "${GW_IP4}" 00:11:22:33:44:55
++}
++
++cleanup() {
++	rm -f "${CAPFILE}"
++	ip -net "${SERVER_NS}" link del link1
++	cleanup_ns "${CLIENT_NS}" "${SERVER_NS}"
++}
++
++test_broadcast_ether_dst() {
++	local rc=0
++	CAPFILE=$(mktemp -u cap.XXXXXXXXXX)
++
++	echo "Testing ethernet broadcast destination"
++
++	# start tcpdump listening for icmp
++	# tcpdump will exit after receiving a single packet
++	# timeout will kill tcpdump if it is still running after 2s
++	timeout 2s ip netns exec "${CLIENT_NS}" \
++		tcpdump -i link0 -c 1 -w "${CAPFILE}" icmp &> /dev/null &
++	pid=$!
++	sleep 0.1 # let tcpdump wake up
++
++	# send broadcast ping
++	ip netns exec "${CLIENT_NS}" \
++		ping -W0.01 -c1 -b 255.255.255.255 &> /dev/null
++
++	# wait for tcpdump for exit after receiving packet
++	wait "${pid}"
++
++	# compare ethernet destination field to ff:ff:ff:ff:ff:ff
++	ether_dst=$(tcpdump -r "${CAPFILE}" -tnne 2>/dev/null | \
++			awk '{sub(/,/,"",$3); print $3}')
++	if [[ "${ether_dst}" == "ff:ff:ff:ff:ff:ff" ]]; then
++		echo "[ OK ]"
++		rc="${ksft_pass}"
++	else
++		echo "[FAIL] expected dst ether addr to be ff:ff:ff:ff:ff:ff," \
++			"got ${ether_dst}"
++		rc="${ksft_fail}"
++	fi
++
++	return "${rc}"
++}
++
++if [ ! -x "$(command -v tcpdump)" ]; then
++	echo "SKIP: Could not run test without tcpdump tool"
++	exit "${ksft_skip}"
++fi
++
++trap cleanup EXIT
++
++setup
++test_broadcast_ether_dst
++
++exit $?
 -- 
 2.51.0
 
