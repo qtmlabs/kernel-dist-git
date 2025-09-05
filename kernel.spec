@@ -165,13 +165,13 @@ Summary: The Linux kernel
 %define specrpmversion 6.16.5
 %define specversion 6.16.5
 %define patchversion 6.16
-%define pkgrelease 201
+%define pkgrelease 200
 %define kversion 6
 %define tarfile_release 6.16.5
 # This is needed to do merge window version magic
 %define patchlevel 16
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.16.5
 
