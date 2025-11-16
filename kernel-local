@@ -1,2 +1,11 @@
 # This file is intentionally left empty in the stock kernel. Its a nicety
 # added for those wanting to do custom rebuilds with altered config opts.
+CONFIG_PREEMPT=y
+# CONFIG_DRM_AUTO_MASTER is not set
+# CONFIG_LOCK_DOWN_IN_EFI_SECURE_BOOT is not set
+# CONFIG_PREEMPT_LAZY is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_DRM_PANIC_FOREGROUND_COLOR=0xffffff
+CONFIG_DRM_PANIC_BACKGROUND_COLOR=0x0000aa
+CONFIG_DRM_PANIC_SCREEN="qr_code"
+CONFIG_DRM_PANIC_SCREEN_QR_CODE_URL="https://panic.archlinux.org/panic_report#"
