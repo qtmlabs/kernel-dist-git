@@ -1,3 +1,4 @@
+ Documentation/hid/intel-ish-hid.rst                |  19 +-
  Makefile                                           |  30 +
  arch/arm/Kconfig                                   |   4 +-
  arch/arm64/Kconfig                                 |   2 +-
@@ -29,15 +30,16 @@
  drivers/firmware/efi/secureboot.c                  |  38 +
  drivers/gpu/drm/i915/display/intel_alpm.c          |   6 +-
  drivers/gpu/drm/i915/display/intel_display.c       |   8 -
- drivers/gpu/drm/i915/display/intel_display_types.h |  46 +-
+ drivers/gpu/drm/i915/display/intel_display_types.h |  45 +-
  drivers/gpu/drm/i915/display/intel_dp.c            |  17 +-
  drivers/gpu/drm/i915/display/intel_plane.c         |  10 +-
- drivers/gpu/drm/i915/display/intel_psr.c           | 317 ++++----
+ drivers/gpu/drm/i915/display/intel_psr.c           | 310 ++++----
  drivers/gpu/drm/i915/display/intel_psr.h           |   2 +-
  drivers/hid/hid-rmi.c                              |  66 --
+ drivers/hid/intel-ish-hid/ishtp/loader.c           |  58 +-
  drivers/hwtracing/coresight/coresight-etm4x-core.c |  19 +
  drivers/input/rmi4/rmi_driver.c                    | 124 ++--
- drivers/iommu/iommu.c                              |  28 +-
+ drivers/iommu/iommu.c                              |  22 +
  drivers/media/pci/intel/ipu-bridge.c               |  14 +
  drivers/mfd/bcm2835-pm.c                           |   9 +-
  drivers/net/ethernet/cadence/macb_main.c           |  29 +-
@@ -60,10 +62,52 @@
  sound/soc/sdca/sdca_class_function.c               |  13 +
  tools/testing/selftests/bpf/Makefile               |   2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |  31 -
- 62 files changed, 1846 insertions(+), 438 deletions(-)
+ 64 files changed, 1905 insertions(+), 442 deletions(-)
 
+diff --git a/Documentation/hid/intel-ish-hid.rst b/Documentation/hid/intel-ish-hid.rst
+index 2adc174fb576c..068a5906b1774 100644
+--- a/Documentation/hid/intel-ish-hid.rst
++++ b/Documentation/hid/intel-ish-hid.rst
+@@ -413,6 +413,10 @@ Vendors who wish to upstream their custom firmware should follow these guideline
+ 
+ - The firmware filename should use one of the following patterns:
+ 
++  - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}_${PRODUCT_NAME_CRC32}_${PRODUCT_SKU_CRC32}.bin``
++  - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}_${PRODUCT_SKU_CRC32}.bin``
++  - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}_${PRODUCT_NAME_CRC32}.bin``
++  - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}.bin``
+   - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_NAME_CRC32}_${PRODUCT_SKU_CRC32}.bin``
+   - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_SKU_CRC32}.bin``
+   - ``ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_NAME_CRC32}.bin``
+@@ -420,16 +424,21 @@ Vendors who wish to upstream their custom firmware should follow these guideline
+ 
+ - ``${intel_plat_gen}`` indicates the Intel platform generation (e.g., ``lnlm`` for Lunar Lake) and must not exceed 8 characters in length.
+ - ``${SYS_VENDOR_CRC32}`` is the CRC32 checksum of the ``sys_vendor`` value from the DMI field ``DMI_SYS_VENDOR``.
++- ``${PRODUCT_FAMILY_CRC32}`` is the CRC32 checksum of the ``product_family`` value from the DMI field ``DMI_PRODUCT_FAMILY``.
+ - ``${PRODUCT_NAME_CRC32}`` is the CRC32 checksum of the ``product_name`` value from the DMI field ``DMI_PRODUCT_NAME``.
+ - ``${PRODUCT_SKU_CRC32}`` is the CRC32 checksum of the ``product_sku`` value from the DMI field ``DMI_PRODUCT_SKU``.
+ 
+ During system boot, the ISH Linux driver will attempt to load the firmware in the following order, prioritizing custom firmware with more precise matching patterns:
+ 
+-1. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_NAME_CRC32}_${PRODUCT_SKU_CRC32}.bin``
+-2. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_SKU_CRC32}.bin``
+-3. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_NAME_CRC32}.bin``
+-4. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}.bin``
+-5. ``intel/ish/ish_${intel_plat_gen}.bin``
++1. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}_${PRODUCT_NAME_CRC32}_${PRODUCT_SKU_CRC32}.bin``
++2. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}_${PRODUCT_SKU_CRC32}.bin``
++3. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}_${PRODUCT_NAME_CRC32}.bin``
++4. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_FAMILY_CRC32}.bin``
++5. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_NAME_CRC32}_${PRODUCT_SKU_CRC32}.bin``
++6. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_SKU_CRC32}.bin``
++7. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}_${PRODUCT_NAME_CRC32}.bin``
++8. ``intel/ish/ish_${intel_plat_gen}_${SYS_VENDOR_CRC32}.bin``
++9. ``intel/ish/ish_${intel_plat_gen}.bin``
+ 
+ The driver will load the first matching firmware and skip the rest. If no matching firmware is found, it will proceed to the next pattern in the specified order. If all searches fail, the default Intel firmware, listed last in the order above, will be loaded.
+ 
 diff --git a/Makefile b/Makefile
-index 96640a9632ef4..73d25b046b017 100644
+index 1d3c0858833f8..6fbc32c9399d7 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -355,6 +355,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -1969,7 +2013,7 @@ index 144f232d61c53..bdbb76aa282e7 100644
  					     new_plane_state, i) {
  		if (plane->pipe != crtc->pipe)
 diff --git a/drivers/gpu/drm/i915/display/intel_display_types.h b/drivers/gpu/drm/i915/display/intel_display_types.h
-index 6e26751e8d0e3..a83620b8618f2 100644
+index 1a7188970f24e..a83620b8618f2 100644
 --- a/drivers/gpu/drm/i915/display/intel_display_types.h
 +++ b/drivers/gpu/drm/i915/display/intel_display_types.h
 @@ -510,6 +510,12 @@ struct intel_hdcp {
@@ -2038,15 +2082,7 @@ index 6e26751e8d0e3..a83620b8618f2 100644
  	bool wm_level_disabled;
  	bool pkg_c_latency_used;
  	/* Only used for state verification. */
-@@ -1160,6 +1186,7 @@ struct intel_crtc_state {
- 	u32 dc3co_exitline;
- 	u16 su_y_granularity;
- 	u8 active_non_psr_pipes;
-+	u8 entry_setup_frames;
- 	const char *no_psr_reason;
- 
- 	/*
-@@ -1717,14 +1744,12 @@ struct intel_psr {
+@@ -1718,14 +1744,12 @@ struct intel_psr {
  	bool active;
  	struct work_struct work;
  	unsigned int busy_frontbuffer_bits;
@@ -2061,7 +2097,7 @@ index 6e26751e8d0e3..a83620b8618f2 100644
  	ktime_t last_entry_attempt;
  	ktime_t last_exit;
  	bool sink_not_reliable;
-@@ -1733,8 +1758,6 @@ struct intel_psr {
+@@ -1734,8 +1758,6 @@ struct intel_psr {
  	u16 su_y_granularity;
  	bool source_panel_replay_support;
  	bool sink_panel_replay_support;
@@ -2070,7 +2106,7 @@ index 6e26751e8d0e3..a83620b8618f2 100644
  	bool panel_replay_enabled;
  	u32 dc3co_exitline;
  	u32 dc3co_exit_delay;
-@@ -1761,9 +1784,6 @@ struct intel_dp {
+@@ -1762,9 +1784,6 @@ struct intel_dp {
  	bool needs_modeset_retry;
  	bool use_max_params;
  	u8 dpcd[DP_RECEIVER_CAP_SIZE];
@@ -2154,7 +2190,7 @@ index ab6a58530b396..707670ff71ec1 100644
  		new_crtc_state->async_flip_planes |= BIT(plane->id);
  	}
 diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index ae23e30568515..8719b4e021de4 100644
+index 5e90985a53d90..f169ac9a7d0b1 100644
 --- a/drivers/gpu/drm/i915/display/intel_psr.c
 +++ b/drivers/gpu/drm/i915/display/intel_psr.c
 @@ -494,82 +494,37 @@ static u8 intel_dp_get_sink_sync_latency(struct intel_dp *intel_dp)
@@ -2641,7 +2677,7 @@ index ae23e30568515..8719b4e021de4 100644
  {
  	struct intel_display *display = to_intel_display(intel_dp);
  	const struct drm_display_mode *adjusted_mode = &crtc_state->hw.adjusted_mode;
-@@ -1708,10 +1714,10 @@ static bool _psr_compute_config(struct intel_dp *intel_dp,
+@@ -1708,7 +1714,7 @@ static bool _psr_compute_config(struct intel_dp *intel_dp,
  	if (crtc_state->vrr.enable)
  		return false;
  
@@ -2649,11 +2685,7 @@ index ae23e30568515..8719b4e021de4 100644
 +	entry_setup_frames = intel_psr_entry_setup_frames(intel_dp, conn_state, adjusted_mode);
  
  	if (entry_setup_frames >= 0) {
--		intel_dp->psr.entry_setup_frames = entry_setup_frames;
-+		crtc_state->entry_setup_frames = entry_setup_frames;
- 	} else {
- 		crtc_state->no_psr_reason = "PSR setup timing not met";
- 		drm_dbg_kms(display->drm,
+ 		crtc_state->entry_setup_frames = entry_setup_frames;
 @@ -1722,19 +1728,33 @@ static bool _psr_compute_config(struct intel_dp *intel_dp,
  	return true;
  }
@@ -2711,15 +2743,6 @@ index ae23e30568515..8719b4e021de4 100644
  	if (!intel_dp_is_edp(intel_dp))
  		return true;
  
-@@ -1792,7 +1815,7 @@ static bool intel_psr_needs_wa_18037818876(struct intel_dp *intel_dp,
- {
- 	struct intel_display *display = to_intel_display(intel_dp);
- 
--	return (DISPLAY_VER(display) == 20 && intel_dp->psr.entry_setup_frames > 0 &&
-+	return (DISPLAY_VER(display) == 20 && crtc_state->entry_setup_frames > 0 &&
- 		!crtc_state->has_sel_update);
- }
- 
 @@ -1829,6 +1852,7 @@ void intel_psr_compute_config(struct intel_dp *intel_dp,
  			      struct drm_connector_state *conn_state)
  {
@@ -2751,15 +2774,7 @@ index ae23e30568515..8719b4e021de4 100644
  }
  
  void intel_psr_get_config(struct intel_encoder *encoder,
-@@ -2167,6 +2189,7 @@ static void intel_psr_enable_locked(struct intel_dp *intel_dp,
- 	intel_dp->psr.pkg_c_latency_used = crtc_state->pkg_c_latency_used;
- 	intel_dp->psr.io_wake_lines = crtc_state->alpm_state.io_wake_lines;
- 	intel_dp->psr.fast_wake_lines = crtc_state->alpm_state.fast_wake_lines;
-+	intel_dp->psr.entry_setup_frames = crtc_state->entry_setup_frames;
- 
- 	if (!psr_interrupt_error_check(intel_dp))
- 		return;
-@@ -2763,7 +2786,8 @@ static bool psr2_sel_fetch_plane_state_supported(const struct intel_plane_state
+@@ -2770,7 +2792,8 @@ static bool psr2_sel_fetch_plane_state_supported(const struct intel_plane_state
   */
  static bool psr2_sel_fetch_pipe_state_supported(const struct intel_crtc_state *crtc_state)
  {
@@ -2769,16 +2784,7 @@ index ae23e30568515..8719b4e021de4 100644
  		return false;
  
  	return true;
-@@ -3076,6 +3100,8 @@ void intel_psr_pre_plane_update(struct intel_atomic_state *state,
- 			 * - Display WA #1136: skl, bxt
- 			 */
- 			if (intel_crtc_needs_modeset(new_crtc_state) ||
-+			    new_crtc_state->update_m_n ||
-+			    new_crtc_state->update_lrr ||
- 			    !new_crtc_state->has_psr ||
- 			    !new_crtc_state->active_planes ||
- 			    new_crtc_state->has_sel_update != psr->sel_update_enabled ||
-@@ -4140,24 +4166,22 @@ psr_source_status(struct intel_dp *intel_dp, struct seq_file *m)
+@@ -4153,24 +4176,22 @@ psr_source_status(struct intel_dp *intel_dp, struct seq_file *m)
  	seq_printf(m, "Source PSR/PanelReplay status: %s [0x%08x]\n", status, val);
  }
  
@@ -2812,7 +2818,7 @@ index ae23e30568515..8719b4e021de4 100644
  	    DP_PANEL_REPLAY_EARLY_TRANSPORT_SUPPORT)
  		seq_printf(m, " (Early Transport)");
  	seq_printf(m, "\n");
-@@ -4195,7 +4219,8 @@ static void intel_psr_print_mode(struct intel_dp *intel_dp,
+@@ -4208,7 +4229,8 @@ static void intel_psr_print_mode(struct intel_dp *intel_dp,
  		seq_printf(m, "  %s\n", psr->no_psr_reason);
  }
  
@@ -2822,7 +2828,7 @@ index ae23e30568515..8719b4e021de4 100644
  {
  	struct intel_display *display = to_intel_display(intel_dp);
  	enum transcoder cpu_transcoder = intel_dp->psr.transcoder;
-@@ -4204,9 +4229,9 @@ static int intel_psr_status(struct seq_file *m, struct intel_dp *intel_dp)
+@@ -4217,9 +4239,9 @@ static int intel_psr_status(struct seq_file *m, struct intel_dp *intel_dp)
  	bool enabled;
  	u32 val, psr2_ctl;
  
@@ -2834,7 +2840,7 @@ index ae23e30568515..8719b4e021de4 100644
  		return 0;
  
  	wakeref = intel_display_rpm_get(display);
-@@ -4320,7 +4345,7 @@ static int i915_edp_psr_status_show(struct seq_file *m, void *data)
+@@ -4333,7 +4355,7 @@ static int i915_edp_psr_status_show(struct seq_file *m, void *data)
  	if (!intel_dp)
  		return -ENODEV;
  
@@ -2843,7 +2849,7 @@ index ae23e30568515..8719b4e021de4 100644
  }
  DEFINE_SHOW_ATTRIBUTE(i915_edp_psr_status);
  
-@@ -4454,7 +4479,7 @@ static int i915_psr_status_show(struct seq_file *m, void *data)
+@@ -4467,7 +4489,7 @@ static int i915_psr_status_show(struct seq_file *m, void *data)
  	struct intel_connector *connector = m->private;
  	struct intel_dp *intel_dp = intel_attached_dp(connector);
  
@@ -2967,6 +2973,111 @@ index d4af17fdba467..154f0403cbf4c 100644
  	data->xport.proto_name = "hid";
  	data->xport.ops = &hid_rmi_ops;
  
+diff --git a/drivers/hid/intel-ish-hid/ishtp/loader.c b/drivers/hid/intel-ish-hid/ishtp/loader.c
+index f34086b29cf08..ffa2042bb316e 100644
+--- a/drivers/hid/intel-ish-hid/ishtp/loader.c
++++ b/drivers/hid/intel-ish-hid/ishtp/loader.c
+@@ -195,13 +195,19 @@ static int prepare_dma_bufs(struct ishtp_device *dev,
+ 	return 0;
+ }
+ 
++/* Patterns with PRODUCT_FAMILY */
++#define ISH_FW_FILE_VENDOR_FAMILY_NAME_SKU_FMT "intel/ish/ish_%s_%08x_%08x_%08x_%08x.bin"
++#define ISH_FW_FILE_VENDOR_FAMILY_SKU_FMT "intel/ish/ish_%s_%08x_%08x_%08x.bin"
++#define ISH_FW_FILE_VENDOR_FAMILY_NAME_FMT "intel/ish/ish_%s_%08x_%08x_%08x.bin"
++#define ISH_FW_FILE_VENDOR_FAMILY_FMT "intel/ish/ish_%s_%08x_%08x.bin"
++
+ #define ISH_FW_FILE_VENDOR_NAME_SKU_FMT "intel/ish/ish_%s_%08x_%08x_%08x.bin"
+ #define ISH_FW_FILE_VENDOR_SKU_FMT "intel/ish/ish_%s_%08x_%08x.bin"
+ #define ISH_FW_FILE_VENDOR_NAME_FMT "intel/ish/ish_%s_%08x_%08x.bin"
+ #define ISH_FW_FILE_VENDOR_FMT "intel/ish/ish_%s_%08x.bin"
+ #define ISH_FW_FILE_DEFAULT_FMT "intel/ish/ish_%s.bin"
+ 
+-#define ISH_FW_FILENAME_LEN_MAX 56
++#define ISH_FW_FILENAME_LEN_MAX 72
+ 
+ #define ISH_CRC_INIT (~0u)
+ #define ISH_CRC_XOROUT (~0u)
+@@ -228,6 +234,12 @@ static int _request_ish_firmware(const struct firmware **firmware_p,
+  * for the given device in the following order, prioritizing custom firmware
+  * with more precise matching patterns:
+  *
++ *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_$(PRODUCT_FAMILY_CRC32)
++ *   _$(PRODUCT_NAME_CRC32)_${PRODUCT_SKU_CRC32}.bin
++ *
++ *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_$(PRODUCT_FAMILY_CRC32)_${PRODUCT_SKU_CRC32}.bin
++ *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_$(PRODUCT_FAMILY_CRC32)_$(PRODUCT_NAME_CRC32).bin
++ *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_$(PRODUCT_FAMILY_CRC32).bin
+  *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_$(PRODUCT_NAME_CRC32)_${PRODUCT_SKU_CRC32}.bin
+  *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_${PRODUCT_SKU_CRC32}.bin
+  *   ish_${fw_generation}_${SYS_VENDOR_CRC32}_$(PRODUCT_NAME_CRC32).bin
+@@ -256,8 +268,9 @@ static int request_ish_firmware(const struct firmware **firmware_p,
+ 				struct device *dev)
+ {
+ 	const char *gen, *sys_vendor, *product_name, *product_sku;
++	const char *product_family;
+ 	struct ishtp_device *ishtp = dev_get_drvdata(dev);
+-	u32 vendor_crc, name_crc, sku_crc;
++	u32 vendor_crc, name_crc, sku_crc, family_crc;
+ 	char filename[ISH_FW_FILENAME_LEN_MAX];
+ 	int ret;
+ 
+@@ -265,14 +278,55 @@ static int request_ish_firmware(const struct firmware **firmware_p,
+ 	sys_vendor = dmi_get_system_info(DMI_SYS_VENDOR);
+ 	product_name = dmi_get_system_info(DMI_PRODUCT_NAME);
+ 	product_sku = dmi_get_system_info(DMI_PRODUCT_SKU);
++	product_family = dmi_get_system_info(DMI_PRODUCT_FAMILY);
+ 
+ 	if (sys_vendor)
+ 		vendor_crc = crc32(ISH_CRC_INIT, sys_vendor, strlen(sys_vendor)) ^ ISH_CRC_XOROUT;
++	if (product_family)
++		family_crc = crc32(ISH_CRC_INIT, product_family,
++				   strlen(product_family)) ^ ISH_CRC_XOROUT;
+ 	if (product_name)
+ 		name_crc = crc32(ISH_CRC_INIT, product_name, strlen(product_name)) ^ ISH_CRC_XOROUT;
+ 	if (product_sku)
+ 		sku_crc = crc32(ISH_CRC_INIT, product_sku, strlen(product_sku)) ^ ISH_CRC_XOROUT;
+ 
++	/* PRODUCT_FAMILY-extended matching */
++	if (sys_vendor && product_family && product_name && product_sku) {
++		snprintf(filename, sizeof(filename),
++			 ISH_FW_FILE_VENDOR_FAMILY_NAME_SKU_FMT,
++			 gen, vendor_crc, family_crc, name_crc, sku_crc);
++		ret = _request_ish_firmware(firmware_p, filename, dev);
++		if (!ret)
++			return 0;
++	}
++
++	if (sys_vendor && product_family && product_sku) {
++		snprintf(filename, sizeof(filename),
++			 ISH_FW_FILE_VENDOR_FAMILY_SKU_FMT,
++			 gen, vendor_crc, family_crc, sku_crc);
++		ret = _request_ish_firmware(firmware_p, filename, dev);
++		if (!ret)
++			return 0;
++	}
++
++	if (sys_vendor && product_family && product_name) {
++		snprintf(filename, sizeof(filename),
++			 ISH_FW_FILE_VENDOR_FAMILY_NAME_FMT,
++			 gen, vendor_crc, family_crc, name_crc);
++		ret = _request_ish_firmware(firmware_p, filename, dev);
++		if (!ret)
++			return 0;
++	}
++
++	if (sys_vendor && product_family) {
++		snprintf(filename, sizeof(filename),
++			 ISH_FW_FILE_VENDOR_FAMILY_FMT,
++			 gen, vendor_crc, family_crc);
++		ret = _request_ish_firmware(firmware_p, filename, dev);
++		if (!ret)
++			return 0;
++}
++
+ 	if (sys_vendor && product_name && product_sku) {
+ 		snprintf(filename, sizeof(filename), ISH_FW_FILE_VENDOR_NAME_SKU_FMT, gen,
+ 			 vendor_crc, name_crc, sku_crc);
 diff --git a/drivers/hwtracing/coresight/coresight-etm4x-core.c b/drivers/hwtracing/coresight/coresight-etm4x-core.c
 index 560975b70474c..995bf2da877ce 100644
 --- a/drivers/hwtracing/coresight/coresight-etm4x-core.c
@@ -3211,7 +3322,7 @@ index ccd9338a44dbe..5c54e522e8a47 100644
  	if (data->f01_container->dev.driver) {
  		/* Driver already bound, so enable ATTN now. */
 diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 2ca990dfbb884..24c31555fb69a 100644
+index 3a0c0e4b42fff..24c31555fb69a 100644
 --- a/drivers/iommu/iommu.c
 +++ b/drivers/iommu/iommu.c
 @@ -8,6 +8,7 @@
@@ -3222,20 +3333,7 @@ index 2ca990dfbb884..24c31555fb69a 100644
  #include <linux/kernel.h>
  #include <linux/bits.h>
  #include <linux/bug.h>
-@@ -1207,7 +1208,11 @@ static int iommu_create_device_direct_mappings(struct iommu_domain *domain,
- 			if (addr == end)
- 				goto map_end;
- 
--			phys_addr = iommu_iova_to_phys(domain, addr);
-+			/*
-+			 * Return address by iommu_iova_to_phys for 0 is
-+			 * ambiguous. Offset to address 1 if addr is 0.
-+			 */
-+			phys_addr = iommu_iova_to_phys(domain, addr ? addr : 1);
- 			if (!phys_addr) {
- 				map_size += pg_size;
- 				continue;
-@@ -2985,6 +2990,27 @@ int iommu_fwspec_add_ids(struct device *dev, const u32 *ids, int num_ids)
+@@ -2989,6 +2990,27 @@ int iommu_fwspec_add_ids(struct device *dev, const u32 *ids, int num_ids)
  }
  EXPORT_SYMBOL_GPL(iommu_fwspec_add_ids);
  
@@ -3330,10 +3428,10 @@ index 8bed59816e82e..9e8e3dcf4bceb 100644
  };
  MODULE_DEVICE_TABLE(of, bcm2835_pm_of_match);
 diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
-index 256cb5bcfac74..4cfb370b43bf7 100644
+index 1a46e27bfbb4a..24bc76977402b 100644
 --- a/drivers/net/ethernet/cadence/macb_main.c
 +++ b/drivers/net/ethernet/cadence/macb_main.c
-@@ -3941,6 +3941,13 @@ static int gem_get_all_flow_entries(struct net_device *netdev,
+@@ -3946,6 +3946,13 @@ static int gem_get_all_flow_entries(struct net_device *netdev,
  	return 0;
  }
  
@@ -3347,7 +3445,7 @@ index 256cb5bcfac74..4cfb370b43bf7 100644
  static int gem_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
  		u32 *rule_locs)
  {
-@@ -3948,9 +3955,6 @@ static int gem_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+@@ -3953,9 +3960,6 @@ static int gem_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
  	int ret = 0;
  
  	switch (cmd->cmd) {
@@ -3357,7 +3455,7 @@ index 256cb5bcfac74..4cfb370b43bf7 100644
  	case ETHTOOL_GRXCLSRLCNT:
  		cmd->rule_cnt = bp->rx_fs_list.count;
  		break;
-@@ -4032,6 +4036,7 @@ static const struct ethtool_ops gem_ethtool_ops = {
+@@ -4040,6 +4044,7 @@ static const struct ethtool_ops gem_ethtool_ops = {
  	.set_ringparam		= macb_set_ringparam,
  	.get_rxnfc			= gem_get_rxnfc,
  	.set_rxnfc			= gem_set_rxnfc,
@@ -3365,7 +3463,7 @@ index 256cb5bcfac74..4cfb370b43bf7 100644
  };
  
  static int macb_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
-@@ -4902,7 +4907,9 @@ static int at91ether_close(struct net_device *dev)
+@@ -4910,7 +4915,9 @@ static int at91ether_close(struct net_device *dev)
  
  	at91ether_stop(lp);
  
@@ -3376,7 +3474,7 @@ index 256cb5bcfac74..4cfb370b43bf7 100644
  }
  
  /* Transmit packet */
-@@ -5522,9 +5529,9 @@ static const struct macb_config default_gem_config = {
+@@ -5530,9 +5537,9 @@ static const struct macb_config default_gem_config = {
  
  static int macb_probe(struct platform_device *pdev)
  {
@@ -3388,7 +3486,7 @@ index 256cb5bcfac74..4cfb370b43bf7 100644
  	struct clk *tsu_clk = NULL;
  	phy_interface_t interface;
  	struct net_device *dev;
-@@ -5540,13 +5547,9 @@ static int macb_probe(struct platform_device *pdev)
+@@ -5548,13 +5555,9 @@ static int macb_probe(struct platform_device *pdev)
  	if (IS_ERR(mem))
  		return PTR_ERR(mem);
  
@@ -3628,10 +3726,10 @@ index ab7eea01ab427..fff7c5f737fc8 100644
  
  int rmi_register_transport_device(struct rmi_transport_dev *xport);
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 83a646d72f6f8..65b72854a0465 100644
+index ee88dd2d2d1f7..5c816f0b8b671 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
-@@ -2404,4 +2404,13 @@ static inline void security_initramfs_populated(void)
+@@ -2405,4 +2405,13 @@ static inline void security_initramfs_populated(void)
  }
  #endif /* CONFIG_SECURITY */
  

@@ -1,3 +1,12 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/9b2102df95ee4b7316a4cd04996dee016aec79b1
+ 9b2102df95ee4b7316a4cd04996dee016aec79b1 drm/amdgpu: rework how we handle TLB fences
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/ff7c5993900e1dbc5af1055261392ed99cbe6257
+ ff7c5993900e1dbc5af1055261392ed99cbe6257 Documentation: hid: intel-ish-hid: Document PRODUCT_FAMILY firmware matching
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/5d6a7a2981a0bbead5133992f7df2419a6c8318c
+ 5d6a7a2981a0bbead5133992f7df2419a6c8318c HID: intel-ish-hid: loader: Add PRODUCT_FAMILY-based firmware matching
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/de68e5eaab5d0edabaccba2bf2782daea6c9ba83
  de68e5eaab5d0edabaccba2bf2782daea6c9ba83 arm64: dts: broadcom: bcm2712-rpi: Move the firmware node down 1 level
 

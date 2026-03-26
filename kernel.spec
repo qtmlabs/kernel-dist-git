@@ -184,18 +184,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .qtmlabs
-%define specrpmversion 6.19.9
-%define specversion 6.19.9
+%define specrpmversion 6.19.10
+%define specversion 6.19.10
 %define patchversion 6.19
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.19.9
+%define tarfile_release 6.19.10
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.19.9
+%define kabiversion 6.19.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4816,6 +4816,14 @@ fi\
 #
 #
 %changelog
+* Wed Mar 25 2026 Augusto Caringi <acaringi@redhat.com> [6.19.10-0]
+- Add entries for 6.19.10 to BugsFixed (Justin M. Forbes)
+- Documentation: hid: intel-ish-hid: Document PRODUCT_FAMILY firmware matching (Vishnu Sankar)
+- HID: intel-ish-hid: loader: Add PRODUCT_FAMILY-based firmware matching (Vishnu Sankar)
+- Add BugsFixed for 6.19.10 (Justin M. Forbes)
+- drm/amdgpu: rework how we handle TLB fences (Alex Deucher)
+- Linux v6.19.10
+
 * Thu Mar 19 2026 Augusto Caringi <acaringi@redhat.com> [6.19.9-0]
 - arm64: dts: broadcom: bcm2712-rpi: Move the firmware node down 1 level (Rob Herring (Arm))
 - arm64: dts: broadcom: bcm2712-d-rpi-5-b: update uart10 interrupt (Gregor Herburger)
