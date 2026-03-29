@@ -1,7 +1,7 @@
-From 41b8206f1507488341220bafa1e04efc1459977d Mon Sep 17 00:00:00 2001
+From 3255ac75e4f05e6194b4a3112d0c2f564dbd0e64 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 23 Mar 2026 20:55:31 +0700
-Subject: [PATCH 01/22] drm/i915: Fix tiled panic write for cases where pitch
+Subject: [PATCH 01/23] drm/i915: Fix tiled panic write for cases where pitch
  != width * cpp
 
 ---
@@ -48,10 +48,10 @@ index df663286092a..79fb4cbd639d 100644
 2.53.0
 
 
-From 43b855f39e049b4751e9302fc312e4cbdff74914 Mon Sep 17 00:00:00 2001
+From 2af2eb2236f61e9e9afbcc23b270fc2472185c07 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 23 Mar 2026 21:40:30 +0700
-Subject: [PATCH 02/22] drm/i915: Always disable compression when disabling
+Subject: [PATCH 02/23] drm/i915: Always disable compression when disabling
  tiling
 
 ---
@@ -80,10 +80,10 @@ index ed14b9ea2ad2..5f4b14e2eb50 100644
 2.53.0
 
 
-From df84cd2d7545ad18b3a408f4e393ccc11f7f6506 Mon Sep 17 00:00:00 2001
+From 473beddd23c0e0f24316763ff18b7571de08433f Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 7 Jul 2025 10:43:40 +0700
-Subject: [PATCH 03/22] drm: Allow disabling automatic DRM master acquisition
+Subject: [PATCH 03/23] drm: Allow disabling automatic DRM master acquisition
  semantics
 
 ---
@@ -211,10 +211,10 @@ index a2556d16bed6..d2658aa39dce 100644
 2.53.0
 
 
-From 14c0f8841778cf9bdc0671ecd41841ca1581b700 Mon Sep 17 00:00:00 2001
+From a2e6809249aaec45337624cd3cf76cc89691f796 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:39:57 -0600
-Subject: [PATCH 04/22] wifi: mt76: connac: use is_connac2() to replace
+Subject: [PATCH 04/23] wifi: mt76: connac: use is_connac2() to replace
  is_mt7921() checks
 
 Unify all per-chip conditionals under the new is_connac2() helper. This
@@ -494,10 +494,10 @@ index 1ddec7788b66..34f07bd3097d 100644
 2.53.0
 
 
-From f6ff5823fd320ff8ba4e59c88d74fcb52ab05745 Mon Sep 17 00:00:00 2001
+From a3489d6157520dc642f122fcd51f9005292f47ae Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:39:58 -0600
-Subject: [PATCH 05/22] wifi: mt76: mt7921: use mt76_for_each_q_rx() in reset
+Subject: [PATCH 05/23] wifi: mt76: mt7921: use mt76_for_each_q_rx() in reset
  path
 
 Replace explicit napi_disable() calls for RX queues with
@@ -532,10 +532,10 @@ index 5ec084432ae3..0db7acb3a637 100644
 2.53.0
 
 
-From e763b56dd105ba782c423517106c9ab3fe332412 Mon Sep 17 00:00:00 2001
+From 30d7bd813fd47583d388580e6c3e02bdd664a166 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:39:59 -0600
-Subject: [PATCH 06/22] wifi: mt76: mt7921: handle MT7902 irq_map quirk with
+Subject: [PATCH 06/23] wifi: mt76: mt7921: handle MT7902 irq_map quirk with
  mutable copy
 
 MT7902 PCIe requires a different wm2_complete_mask value, so introduce a
@@ -581,10 +581,10 @@ index ec9686183251..731442a1cb66 100644
 2.53.0
 
 
-From ab62f3febecbf6d87ec37881100843aeba3caa0b Mon Sep 17 00:00:00 2001
+From bab878ceef3f2257e6f5c62ec66acf1b294c6715 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:00 -0600
-Subject: [PATCH 07/22] wifi: mt76: mt7921: add MT7902e DMA layout support
+Subject: [PATCH 07/23] wifi: mt76: mt7921: add MT7902e DMA layout support
 
 Add MT7902 PCIe specific DMA layout overrides for MCU TXQ index, RX ring
 size, and MCU_WA usage. Common layout remains the default for other chips.
@@ -707,10 +707,10 @@ index 731442a1cb66..28bff60959fc 100644
 2.53.0
 
 
-From 0e0d7f791050b289b4992043d8dc4e0ed3c8b0d5 Mon Sep 17 00:00:00 2001
+From e7fbf49c140c569720002422be59591dcc9469d8 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:01 -0600
-Subject: [PATCH 08/22] wifi: mt76: connac: mark MT7902 as hw txp devices
+Subject: [PATCH 08/23] wifi: mt76: connac: mark MT7902 as hw txp devices
 
 Add MT7902 to is_mt76_fw_txp() so it follows the legacy TX descriptor
 path like the other connac2 chips that return false.
@@ -740,10 +740,10 @@ index 02bea67d37c3..d868bb7c7ab8 100644
 2.53.0
 
 
-From 77c0ff9f012b4edf216e26ce15ee62cbef944273 Mon Sep 17 00:00:00 2001
+From 0a8df5df0a74da3c17f7aeb2c0fb60a056f8d51c Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:02 -0600
-Subject: [PATCH 09/22] wifi: mt76: mt792x: add PSE handling barrier for the
+Subject: [PATCH 09/23] wifi: mt76: mt792x: add PSE handling barrier for the
  large MCU cmd
 
 Add a dummy register read in mt76_connac_mcu_rate_txpower_band() to act as
@@ -800,10 +800,10 @@ index acf627aed609..7ddde9286861 100644
 2.53.0
 
 
-From f7689790139211862523668487e1e555a3a20471 Mon Sep 17 00:00:00 2001
+From 6eade0b3e7d810bf1f19536cf0c2c237d9114c74 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:03 -0600
-Subject: [PATCH 10/22] wifi: mt76: mt792x: ensure MCU ready before ROM patch
+Subject: [PATCH 10/23] wifi: mt76: mt792x: ensure MCU ready before ROM patch
  download
 
 Restart the MCU and poll FW state to ensure correct MCU status
@@ -839,10 +839,10 @@ index 517bbf55a9ee..8fca3ed6234a 100644
 2.53.0
 
 
-From 638e8b6d68c4a9a3d79d9bddf8c9c9983d5fc007 Mon Sep 17 00:00:00 2001
+From d642e65170900c8b12b967b38c7e07483e8bbdda Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:04 -0600
-Subject: [PATCH 11/22] wifi: mt76: mt7921: add MT7902 MCU support
+Subject: [PATCH 11/23] wifi: mt76: mt7921: add MT7902 MCU support
 
 Add MCU support for the MT7902 chipset.
 
@@ -937,10 +937,10 @@ index 8388638ed550..1f381ab356bc 100644
 2.53.0
 
 
-From e775a4f588ddce5b304d0888bf1bfe74398aab87 Mon Sep 17 00:00:00 2001
+From 48bd7140c9b57ec9611bfa58340ec32f1a8b7a32 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:05 -0600
-Subject: [PATCH 12/22] wifi: mt76: mt792x: add MT7902 WFDMA prefetch
+Subject: [PATCH 12/23] wifi: mt76: mt792x: add MT7902 WFDMA prefetch
  configuration
 
 Configure the RX/TX ring prefetch setting for MT7902 PCIe device.
@@ -985,10 +985,10 @@ index 34f07bd3097d..002aece857b2 100644
 2.53.0
 
 
-From 51fa391bc316fe5e97a31e563b0f90b0bf62fc75 Mon Sep 17 00:00:00 2001
+From 42b7db81e97409c51b6f0e809a026e05f36744e8 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:06 -0600
-Subject: [PATCH 13/22] wifi: mt76: mt7921: add MT7902 PCIe device support
+Subject: [PATCH 13/23] wifi: mt76: mt7921: add MT7902 PCIe device support
 
 Register the MT7902 PCI device ID in the mt7921 driver and add its
 corresponding firmware and ROM patch names.
@@ -1026,10 +1026,10 @@ index 28bff60959fc..867b31308ab3 100644
 2.53.0
 
 
-From 238d1d45d7369beb25f303b9371130fc66cacb55 Mon Sep 17 00:00:00 2001
+From 006a35c393c8aae975827d91e32852d7f1470f7b Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Wed, 18 Feb 2026 18:40:07 -0600
-Subject: [PATCH 14/22] wifi: mt76: mt7921: add MT7902 SDIO device support
+Subject: [PATCH 14/23] wifi: mt76: mt7921: add MT7902 SDIO device support
 
 Register the MT7902 SDIO device ID in the mt7921 driver and add its
 corresponding firmware and ROM patch names.
@@ -1065,10 +1065,10 @@ index 3421e53dc948..9150f185716c 100644
 2.53.0
 
 
-From 2dfdddee304fdb206a25206f066225203a40009b Mon Sep 17 00:00:00 2001
+From 89ec8fa6a1aa3071b1d85dbbbdcd8df3f6fdeec4 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:18 -0600
-Subject: [PATCH 15/22] mmc: sdio: add MediaTek MT7902 SDIO device ID
+Subject: [PATCH 15/23] mmc: sdio: add MediaTek MT7902 SDIO device ID
 
 Add SDIO device ID (0x790a) for MediaTek MT7902 to sdio_ids.h.
 
@@ -1094,10 +1094,10 @@ index 673cbdf43453..dce89c110691 100644
 2.53.0
 
 
-From 60c0a1828325a445699b348a03ce51c8f8de403e Mon Sep 17 00:00:00 2001
+From d8c985d9a6deaf92cd8e1b632c1a253917948037 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:19 -0600
-Subject: [PATCH 16/22] Bluetooth: btmtk: add MT7902 MCU support
+Subject: [PATCH 16/23] Bluetooth: btmtk: add MT7902 MCU support
 
 Add MT7902 device ID and firmware filename to enable MCU firmware
 loading.
@@ -1136,10 +1136,10 @@ index 5df7c3296624..b4506186b2f7 100644
 2.53.0
 
 
-From e82957e3f9e02fba37f6e5f214e85dbd26ded273 Mon Sep 17 00:00:00 2001
+From 953ed7f2bdfb73fde96d90296f03f2c07ac89dbd Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:20 -0600
-Subject: [PATCH 17/22] Bluetooth: btusb: Add new VID/PID 13d3/3579 for MT7902
+Subject: [PATCH 17/23] Bluetooth: btusb: Add new VID/PID 13d3/3579 for MT7902
 
 Add VID 13d3 & PID 3579 for MediaTek MT7902 USB Bluetooth chip.
 
@@ -1210,10 +1210,10 @@ index a41bb1e2a279..75bfc740ba77 100644
 2.53.0
 
 
-From f620fea36d8111d83b594ef35bbccb5ea0cafac1 Mon Sep 17 00:00:00 2001
+From 0141bca91068fcb206b77b8d51f9e42059cb14b1 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:21 -0600
-Subject: [PATCH 18/22] Bluetooth: btusb: Add new VID/PID 13d3/3580 for MT7902
+Subject: [PATCH 18/23] Bluetooth: btusb: Add new VID/PID 13d3/3580 for MT7902
 
 Add VID 13d3 & PID 3580 for MediaTek MT7902 USB Bluetooth chip.
 
@@ -1284,10 +1284,10 @@ index 75bfc740ba77..8de17ba67fa3 100644
 2.53.0
 
 
-From 88a57c35473089dbdc77787a0e665334c8fa7777 Mon Sep 17 00:00:00 2001
+From cf99ecb548afd17b436beef99fdaaaa5497ca9b6 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:22 -0600
-Subject: [PATCH 19/22] Bluetooth: btusb: Add new VID/PID 13d3/3594 for MT7902
+Subject: [PATCH 19/23] Bluetooth: btusb: Add new VID/PID 13d3/3594 for MT7902
 
 Add VID 13d3 & PID 3594 for MediaTek MT7902 USB Bluetooth chip.
 
@@ -1358,10 +1358,10 @@ index 8de17ba67fa3..cae922a34967 100644
 2.53.0
 
 
-From 87f0f527e347873a8221797c17de5d3ab6133ce7 Mon Sep 17 00:00:00 2001
+From f47de3d666c962f99939a487e33b7ce7f3f1dbee Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:23 -0600
-Subject: [PATCH 20/22] Bluetooth: btusb: Add new VID/PID 13d3/3596 for MT7902
+Subject: [PATCH 20/23] Bluetooth: btusb: Add new VID/PID 13d3/3596 for MT7902
 
 Add VID 13d3 & PID 3596 for MediaTek MT7902 USB Bluetooth chip.
 
@@ -1432,10 +1432,10 @@ index cae922a34967..f633cd7b3401 100644
 2.53.0
 
 
-From c699ac04cbefc7b83d6e852505bd77177f98e732 Mon Sep 17 00:00:00 2001
+From 296ec362a79db53c3b4d62f60590528cd8770307 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:24 -0600
-Subject: [PATCH 21/22] Bluetooth: btusb: Add new VID/PID 0e8d/1ede for MT7902
+Subject: [PATCH 21/23] Bluetooth: btusb: Add new VID/PID 0e8d/1ede for MT7902
 
 Add VID 0e8d & PID 1ede for MediaTek MT7902 USB Bluetooth chip.
 
@@ -1506,10 +1506,10 @@ index f633cd7b3401..217f4dc74ea8 100644
 2.53.0
 
 
-From 593112ebd30b70543630d4e81a8ad57cae7bfdf3 Mon Sep 17 00:00:00 2001
+From fef329270d53e1c0a0d7f12a8ae110fa5d329672 Mon Sep 17 00:00:00 2001
 From: Sean Wang <sean.wang@mediatek.com>
 Date: Tue, 24 Feb 2026 00:13:25 -0600
-Subject: [PATCH 22/22] Bluetooth: btmtk: add MT7902 SDIO support
+Subject: [PATCH 22/23] Bluetooth: btmtk: add MT7902 SDIO support
 
 Add MT7902 Bluetooth SDIO support by introducing chip data and
 registering the device ID.
@@ -1617,6 +1617,37 @@ index fba3ab6d30a5..c4ff2536037a 100644
  
  	bt_dev_info(hdev, "Device setup in %llu usecs", duration);
  
+-- 
+2.53.0
+
+
+From d90e0deaecadb17258824de46af002f4fb83e6fc Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Sun, 29 Mar 2026 22:03:06 +0700
+Subject: [PATCH 23/23] wifi: mt76: mt7921: Handle NULL dev->new_ctx in
+ channel_switch_rx_beacon
+
+---
+ drivers/net/wireless/mediatek/mt76/mt7921/main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/wireless/mediatek/mt76/mt7921/main.c b/drivers/net/wireless/mediatek/mt76/mt7921/main.c
+index 5fae9a6e273c..b51f1c3238de 100644
+--- a/drivers/net/wireless/mediatek/mt76/mt7921/main.c
++++ b/drivers/net/wireless/mediatek/mt76/mt7921/main.c
+@@ -1497,9 +1497,9 @@ static void mt7921_channel_switch_rx_beacon(struct ieee80211_hw *hw,
+ 	struct mt792x_vif *mvif = (struct mt792x_vif *)vif->drv_priv;
+ 	u16 beacon_interval = vif->bss_conf.beacon_int;
+ 
+-	if (cfg80211_chandef_identical(&chsw->chandef,
+-				       &dev->new_ctx->def) &&
+-				       chsw->count) {
++	if (dev->new_ctx &&
++	    cfg80211_chandef_identical(&chsw->chandef, &dev->new_ctx->def) &&
++	    chsw->count) {
+ 		mod_timer(&mvif->csa_timer,
+ 			  TU_TO_EXP_TIME(beacon_interval * chsw->count));
+ 	}
 -- 
 2.53.0
 
