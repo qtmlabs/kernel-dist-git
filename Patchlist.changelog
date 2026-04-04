@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/be074bcb52e8cdf7c346e64b2ab062b407eeb80b
+ be074bcb52e8cdf7c346e64b2ab062b407eeb80b Revert "drm: Fix use-after-free on framebuffers and property blobs when calling drm_dev_unplug"
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/9b2102df95ee4b7316a4cd04996dee016aec79b1
  9b2102df95ee4b7316a4cd04996dee016aec79b1 drm/amdgpu: rework how we handle TLB fences
 

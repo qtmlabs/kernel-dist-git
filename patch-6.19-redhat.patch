@@ -28,6 +28,8 @@
  drivers/firmware/efi/libstub/fdt.c                 |   5 +
  drivers/firmware/efi/libstub/secureboot.c          |  14 +-
  drivers/firmware/efi/secureboot.c                  |  38 +
+ drivers/gpu/drm/drm_file.c                         |   5 +-
+ drivers/gpu/drm/drm_mode_config.c                  |   9 +-
  drivers/gpu/drm/i915/display/intel_alpm.c          |   6 +-
  drivers/gpu/drm/i915/display/intel_display.c       |   8 -
  drivers/gpu/drm/i915/display/intel_display_types.h |  45 +-
@@ -62,7 +64,7 @@
  sound/soc/sdca/sdca_class_function.c               |  13 +
  tools/testing/selftests/bpf/Makefile               |   2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |  31 -
- 64 files changed, 1905 insertions(+), 442 deletions(-)
+ 66 files changed, 1909 insertions(+), 452 deletions(-)
 
 diff --git a/Documentation/hid/intel-ish-hid.rst b/Documentation/hid/intel-ish-hid.rst
 index 2adc174fb576c..068a5906b1774 100644
@@ -107,7 +109,7 @@ index 2adc174fb576c..068a5906b1774 100644
  The driver will load the first matching firmware and skip the rest. If no matching firmware is found, it will proceed to the next pattern in the specified order. If all searches fail, the default Intel firmware, listed last in the order above, will be loaded.
  
 diff --git a/Makefile b/Makefile
-index 1d3c0858833f8..6fbc32c9399d7 100644
+index 4043ecae14086..9e6c5d4b56a67 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -355,6 +355,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -1975,6 +1977,52 @@ index 0000000000000..de0a3714a5d44
 +		}
 +	}
 +}
+diff --git a/drivers/gpu/drm/drm_file.c b/drivers/gpu/drm/drm_file.c
+index 6ee9b3df87351..be5e617ceb9f1 100644
+--- a/drivers/gpu/drm/drm_file.c
++++ b/drivers/gpu/drm/drm_file.c
+@@ -233,7 +233,6 @@ static void drm_events_release(struct drm_file *file_priv)
+ void drm_file_free(struct drm_file *file)
+ {
+ 	struct drm_device *dev;
+-	int idx;
+ 
+ 	if (!file)
+ 		return;
+@@ -250,11 +249,9 @@ void drm_file_free(struct drm_file *file)
+ 
+ 	drm_events_release(file);
+ 
+-	if (drm_core_check_feature(dev, DRIVER_MODESET) &&
+-	    drm_dev_enter(dev, &idx)) {
++	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+ 		drm_fb_release(file);
+ 		drm_property_destroy_user_blobs(dev, file);
+-		drm_dev_exit(idx);
+ 	}
+ 
+ 	if (drm_core_check_feature(dev, DRIVER_SYNCOBJ))
+diff --git a/drivers/gpu/drm/drm_mode_config.c b/drivers/gpu/drm/drm_mode_config.c
+index 802bc4608abf5..d12db9b0bab81 100644
+--- a/drivers/gpu/drm/drm_mode_config.c
++++ b/drivers/gpu/drm/drm_mode_config.c
+@@ -577,13 +577,10 @@ void drm_mode_config_cleanup(struct drm_device *dev)
+ 	 */
+ 	WARN_ON(!list_empty(&dev->mode_config.fb_list));
+ 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
+-		if (list_empty(&fb->filp_head) || drm_framebuffer_read_refcount(fb) > 1) {
+-			struct drm_printer p = drm_dbg_printer(dev, DRM_UT_KMS, "[leaked fb]");
++		struct drm_printer p = drm_dbg_printer(dev, DRM_UT_KMS, "[leaked fb]");
+ 
+-			drm_printf(&p, "framebuffer[%u]:\n", fb->base.id);
+-			drm_framebuffer_print_info(&p, 1, fb);
+-		}
+-		list_del_init(&fb->filp_head);
++		drm_printf(&p, "framebuffer[%u]:\n", fb->base.id);
++		drm_framebuffer_print_info(&p, 1, fb);
+ 		drm_framebuffer_free(&fb->base.refcount);
+ 	}
+ 
 diff --git a/drivers/gpu/drm/i915/display/intel_alpm.c b/drivers/gpu/drm/i915/display/intel_alpm.c
 index affa3daefd594..f4f1b68f75435 100644
 --- a/drivers/gpu/drm/i915/display/intel_alpm.c
@@ -1994,10 +2042,10 @@ index affa3daefd594..f4f1b68f75435 100644
  
  			intel_de_write(display, PR_ALPM_CTL(display, cpu_transcoder),
 diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
-index 144f232d61c53..bdbb76aa282e7 100644
+index 2b8a77ddcefc3..107ba232ad453 100644
 --- a/drivers/gpu/drm/i915/display/intel_display.c
 +++ b/drivers/gpu/drm/i915/display/intel_display.c
-@@ -6031,14 +6031,6 @@ static int intel_async_flip_check_uapi(struct intel_atomic_state *state,
+@@ -6037,14 +6037,6 @@ static int intel_async_flip_check_uapi(struct intel_atomic_state *state,
  		return -EINVAL;
  	}
  
@@ -2161,10 +2209,10 @@ index b6ce11267b92d..8c68fb56c8982 100644
  	intel_dp_detect_dsc_caps(intel_dp, connector);
  
 diff --git a/drivers/gpu/drm/i915/display/intel_plane.c b/drivers/gpu/drm/i915/display/intel_plane.c
-index ab6a58530b396..707670ff71ec1 100644
+index 79910d52dc8fb..3a6c1f78b3d40 100644
 --- a/drivers/gpu/drm/i915/display/intel_plane.c
 +++ b/drivers/gpu/drm/i915/display/intel_plane.c
-@@ -651,11 +651,10 @@ static int intel_plane_atomic_calc_changes(const struct intel_crtc_state *old_cr
+@@ -656,11 +656,10 @@ static int intel_plane_atomic_calc_changes(const struct intel_crtc_state *old_cr
  	    ilk_must_disable_cxsr(new_crtc_state, old_plane_state, new_plane_state))
  		new_crtc_state->disable_cxsr = true;
  
@@ -2179,7 +2227,7 @@ index ab6a58530b396..707670ff71ec1 100644
  		/*
  		 * On platforms with double buffered async flip bit we
  		 * set the bit already one frame early during the sync
-@@ -663,6 +662,9 @@ static int intel_plane_atomic_calc_changes(const struct intel_crtc_state *old_cr
+@@ -668,6 +667,9 @@ static int intel_plane_atomic_calc_changes(const struct intel_crtc_state *old_cr
  		 * hardware will therefore be ready to perform a real
  		 * async flip during the next commit, without having
  		 * to wait yet another frame for the bit to latch.
@@ -3428,7 +3476,7 @@ index 8bed59816e82e..9e8e3dcf4bceb 100644
  };
  MODULE_DEVICE_TABLE(of, bcm2835_pm_of_match);
 diff --git a/drivers/net/ethernet/cadence/macb_main.c b/drivers/net/ethernet/cadence/macb_main.c
-index 1a46e27bfbb4a..24bc76977402b 100644
+index ba794f2325f10..ddf2bb4d25194 100644
 --- a/drivers/net/ethernet/cadence/macb_main.c
 +++ b/drivers/net/ethernet/cadence/macb_main.c
 @@ -3946,6 +3946,13 @@ static int gem_get_all_flow_entries(struct net_device *netdev,

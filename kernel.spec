@@ -107,7 +107,7 @@
 
 Summary: The Linux kernel
 %if 0%{?fedora}
-%define secure_boot_arch x86_64
+%define secure_boot_arch x86_64 aarch64
 %else
 %define secure_boot_arch x86_64 aarch64 s390x ppc64le
 %endif
@@ -184,18 +184,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .qtmlabs
-%define specrpmversion 6.19.10
-%define specversion 6.19.10
+%define specrpmversion 6.19.11
+%define specversion 6.19.11
 %define patchversion 6.19
-%define pkgrelease 201
+%define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.19.10
+%define tarfile_release 6.19.11
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.19.10
+%define kabiversion 6.19.11
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4816,6 +4816,13 @@ fi\
 #
 #
 %changelog
+* Thu Apr 02 2026 Augusto Caringi <acaringi@redhat.com> [6.19.11-0]
+- Add to BugsFixed for 6.19.11 (Justin M. Forbes)
+- Revert "drm: Fix use-after-free on framebuffers and property blobs when calling drm_dev_unplug" (Justin M. Forbes)
+- fedora: arm64: Make qcom geni i2c-adapter and i2c-hid-of drivers builtin (Hans de Goede)
+- redhat/kernel.spec: add aarch64 to fedora secure boot list (Jeremy Cline)
+- Linux v6.19.11
+
 * Wed Mar 25 2026 Augusto Caringi <acaringi@redhat.com> [6.19.10-0]
 - Add entries for 6.19.10 to BugsFixed (Justin M. Forbes)
 - Documentation: hid: intel-ish-hid: Document PRODUCT_FAMILY firmware matching (Vishnu Sankar)
