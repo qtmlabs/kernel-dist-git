@@ -184,18 +184,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .qtmlabs
-%define specrpmversion 6.19.11
-%define specversion 6.19.11
+%define specrpmversion 6.19.12
+%define specversion 6.19.12
 %define patchversion 6.19
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.19.11
+%define tarfile_release 6.19.12
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.19.11
+%define kabiversion 6.19.12
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4816,6 +4816,12 @@ fi\
 #
 #
 %changelog
+* Sun Apr 12 2026 Justin M. Forbes <jforbes@fedoraproject.org> [6.19.12-0]
+- Add new config item for 6.19.12 (Justin M. Forbes)
+- redhat/configs: enable the DIBS driver as it is now required for the SMC networking (Dan Horák)
+- redhat/configs: enable CRYPTO_PHMAC as module on s390x (Dan Horák)
+- Linux v6.19.12
+
 * Thu Apr 02 2026 Augusto Caringi <acaringi@redhat.com> [6.19.11-0]
 - Add to BugsFixed for 6.19.11 (Justin M. Forbes)
 - Revert "drm: Fix use-after-free on framebuffers and property blobs when calling drm_dev_unplug" (Justin M. Forbes)
