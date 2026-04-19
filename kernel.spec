@@ -184,18 +184,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .qtmlabs
-%define specrpmversion 6.19.12
-%define specversion 6.19.12
+%define specrpmversion 6.19.13
+%define specversion 6.19.13
 %define patchversion 6.19
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.19.12
+%define tarfile_release 6.19.13
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.19.12
+%define kabiversion 6.19.13
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4816,6 +4816,9 @@ fi\
 #
 #
 %changelog
+* Sat Apr 18 2026 Justin M. Forbes <jforbes@fedoraproject.org> [6.19.13-0]
+- Linux v6.19.13
+
 * Sun Apr 12 2026 Justin M. Forbes <jforbes@fedoraproject.org> [6.19.12-0]
 - Add new config item for 6.19.12 (Justin M. Forbes)
 - redhat/configs: enable the DIBS driver as it is now required for the SMC networking (Dan Horák)
