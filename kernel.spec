@@ -187,18 +187,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 # define buildid .local
-%define specrpmversion 7.1.4
-%define specversion 7.1.4
+%define specrpmversion 7.1.5
+%define specversion 7.1.5
 %define patchversion 7.1
-%define pkgrelease 204
+%define pkgrelease 200
 %define kversion 7
-%define tarfile_release 7.1.4
+%define tarfile_release 7.1.5
 # This is needed to do merge window version magic
 %define patchlevel 1
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 7.1.4
+%define kabiversion 7.1.5
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4857,6 +4857,11 @@ fi\
 #
 #
 %changelog
+* Fri Jul 24 2026 Augusto Caringi <acaringi@redhat.com> [7.1.5-0]
+- redhat/configs: fix new config items for aarch64 and s390x (Augusto Caringi)
+- Revert some RHEL only rng patches (Justin M. Forbes)
+- Linux v7.1.5
+
 * Wed Jul 22 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.1.4-4]
 - net/packet: avoid fanout hook re-registration after unregister (David Lee)
 

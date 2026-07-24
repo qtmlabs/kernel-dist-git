@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/87a4913c27ab87d4d5a6a2fa7a2e5915e4f997bd
+ 87a4913c27ab87d4d5a6a2fa7a2e5915e4f997bd Revert some RHEL only rng patches
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/4735f2eec63a6a192b69a79921f8559570f1ebf9
  4735f2eec63a6a192b69a79921f8559570f1ebf9 net/packet: avoid fanout hook re-registration after unregister
 

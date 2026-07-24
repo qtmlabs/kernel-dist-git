@@ -10,11 +10,9 @@
  arch/x86/kvm/lapic.c                               |   2 +-
  arch/x86/kvm/mmu/mmu.c                             |  12 +-
  arch/x86/kvm/mmu/paging_tmpl.h                     |  10 +-
- arch/x86/kvm/vmx/nested.c                          |  13 +-
+ arch/x86/kvm/vmx/nested.c                          |  11 +-
  crypto/akcipher.c                                  |   3 +-
  crypto/dh.c                                        |  25 +
- crypto/drbg.c                                      |  18 +-
- crypto/rng.c                                       | 155 +++-
  crypto/seqiv.c                                     |  15 +-
  crypto/sig.c                                       |   3 +-
  crypto/testmgr.c                                   |   6 +-
@@ -30,7 +28,6 @@
  drivers/firmware/efi/libstub/fdt.c                 |   5 +
  drivers/firmware/efi/libstub/secureboot.c          |  14 +-
  drivers/firmware/efi/secureboot.c                  |  38 +
- .../gpu/drm/amd/amdkfd/kfd_device_queue_manager.c  |  20 +-
  drivers/gpu/drm/amd/pm/swsmu/amdgpu_smu.c          |  12 +
  drivers/gpu/drm/amd/pm/swsmu/inc/amdgpu_smu.h      |  11 +
  .../gpu/drm/amd/pm/swsmu/smu14/smu_v14_0_0_ppt.c   |  45 +
@@ -41,20 +38,16 @@
  drivers/media/i2c/Makefile                         |   1 +
  drivers/media/i2c/imx471.c                         | 957 +++++++++++++++++++++
  drivers/media/pci/intel/ipu-bridge.c               |  41 +
- drivers/pci/msi/msi.c                              |   4 +-
  drivers/pci/quirks.c                               |  24 +
  drivers/platform/x86/intel/int3472/discrete.c      |  18 +
  drivers/usb/core/hub.c                             |   7 +
- fs/btrfs/compression.c                             |  18 +-
- include/linux/crypto.h                             |   3 +
+ include/linux/crypto.h                             |   2 +
  include/linux/efi.h                                |  22 +-
  include/linux/lsm_hook_defs.h                      |   1 +
  include/linux/random.h                             |  10 +
  include/linux/security.h                           |   9 +
  kernel/module/signing.c                            |   9 +-
- net/can/bcm.c                                      |  37 +-
  net/packet/af_packet.c                             |   6 +-
- net/sched/cls_api.c                                |   3 +
  scripts/Makefile.lib                               |   3 +
  scripts/tags.sh                                    |   2 +
  security/integrity/platform_certs/load_uefi.c      |   6 +-
@@ -65,7 +58,7 @@
  tools/testing/selftests/bpf/DENYLIST.rhel          |  76 ++
  tools/testing/selftests/bpf/Makefile               |   2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |  31 -
- 67 files changed, 2108 insertions(+), 191 deletions(-)
+ 60 files changed, 1906 insertions(+), 135 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
 index f74da642290a..06c8bb2075e6 100644
@@ -85,7 +78,7 @@ index f74da642290a..06c8bb2075e6 100644
  M:	Maxim Levitsky <maximlevitsky@gmail.com>
  M:	Alex Dubov <oakad@yahoo.com>
 diff --git a/Makefile b/Makefile
-index b3496dd21312..cb88d3636564 100644
+index 58f3b3e2dc1c..c57ee1ced308 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -356,6 +356,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -315,7 +308,7 @@ index 46882ce79c3a..9c73814c31e0 100644
  	reserve_initrd();
  
 diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 92a1e69c5962..1cb243df0bc0 100644
+index d806abaeda3d..3a0eef95e905 100644
 --- a/arch/x86/kvm/lapic.c
 +++ b/arch/x86/kvm/lapic.c
 @@ -2052,7 +2052,7 @@ static void apic_timer_expired(struct kvm_lapic *apic, bool from_timer_fn)
@@ -398,7 +391,7 @@ index 901cd2bd40b8..6465de820e70 100644
  
  out_unlock:
 diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 3fe88f29be7a..2a50f8fab45d 100644
+index 52ab52b0e1cc..170b0c4d865f 100644
 --- a/arch/x86/kvm/vmx/nested.c
 +++ b/arch/x86/kvm/vmx/nested.c
 @@ -336,6 +336,7 @@ static void nested_put_vmcs12_pages(struct kvm_vcpu *vcpu)
@@ -427,15 +420,6 @@ index 3fe88f29be7a..2a50f8fab45d 100644
  	}
  	kfree(vmx->nested.cached_vmcs12);
  	vmx->nested.cached_vmcs12 = NULL;
-@@ -3755,6 +3762,8 @@ enum nvmx_vmentry_status nested_vmx_enter_non_root_mode(struct kvm_vcpu *vcpu,
- 	if (!from_vmentry)
- 		return NVMX_VMENTRY_VMEXIT;
- 
-+	nested_put_vmcs12_pages(vcpu);
-+
- 	load_vmcs12_host_state(vcpu, vmcs12);
- 	vmcs12->vm_exit_reason = exit_reason.full;
- 	if (enable_shadow_vmcs || nested_vmx_is_evmptr12_valid(vmx))
 diff --git a/crypto/akcipher.c b/crypto/akcipher.c
 index dfe87b3ce183..cd1302ca3b36 100644
 --- a/crypto/akcipher.c
@@ -490,286 +474,6 @@ index 7ad4768716c8..01ccc24db074 100644
  		}
  	}
  
-diff --git a/crypto/drbg.c b/crypto/drbg.c
-index e3065fb9541b..ff5393e6797e 100644
---- a/crypto/drbg.c
-+++ b/crypto/drbg.c
-@@ -1271,13 +1271,14 @@ static int drbg_generate(struct drbg_state *drbg,
-  * Wrapper around drbg_generate which can pull arbitrary long strings
-  * from the DRBG without hitting the maximum request limitation.
-  *
-- * Parameters: see drbg_generate
-+ * Parameters: see drbg_generate, except @reseed, which triggers reseeding
-  * Return codes: see drbg_generate -- if one drbg_generate request fails,
-  *		 the entire drbg_generate_long request fails
-  */
- static int drbg_generate_long(struct drbg_state *drbg,
- 			      unsigned char *buf, unsigned int buflen,
--			      struct drbg_string *addtl)
-+			      struct drbg_string *addtl,
-+			      bool reseed)
- {
- 	unsigned int len = 0;
- 	unsigned int slice = 0;
-@@ -1287,6 +1288,8 @@ static int drbg_generate_long(struct drbg_state *drbg,
- 		slice = ((buflen - len) / drbg_max_request_bytes(drbg));
- 		chunk = slice ? drbg_max_request_bytes(drbg) : (buflen - len);
- 		mutex_lock(&drbg->drbg_mutex);
-+		if (reseed)
-+			drbg->seeded = DRBG_SEED_STATE_UNSEEDED;
- 		err = drbg_generate(drbg, buf + len, chunk, addtl);
- 		mutex_unlock(&drbg->drbg_mutex);
- 		if (0 > err)
-@@ -1688,6 +1691,7 @@ static int drbg_kcapi_random(struct crypto_rng *tfm,
- 	struct drbg_state *drbg = crypto_rng_ctx(tfm);
- 	struct drbg_string *addtl = NULL;
- 	struct drbg_string string;
-+	int err;
- 
- 	if (slen) {
- 		/* linked list variable is now local to allow modification */
-@@ -1695,7 +1699,15 @@ static int drbg_kcapi_random(struct crypto_rng *tfm,
- 		addtl = &string;
- 	}
- 
--	return drbg_generate_long(drbg, dst, dlen, addtl);
-+	err = drbg_generate_long(drbg, dst, dlen, addtl,
-+				 (crypto_tfm_get_flags(crypto_rng_tfm(tfm)) &
-+				  CRYPTO_TFM_REQ_NEED_RESEED) ==
-+				 CRYPTO_TFM_REQ_NEED_RESEED);
-+
-+	crypto_tfm_clear_flags(crypto_rng_tfm(tfm),
-+			       CRYPTO_TFM_REQ_NEED_RESEED);
-+
-+	return err;
- }
- 
- /*
-diff --git a/crypto/rng.c b/crypto/rng.c
-index 1d4b9177bad4..d9ca86086946 100644
---- a/crypto/rng.c
-+++ b/crypto/rng.c
-@@ -12,10 +12,13 @@
- #include <linux/atomic.h>
- #include <linux/cryptouser.h>
- #include <linux/err.h>
-+#include <linux/fips.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/random.h>
-+#include <linux/sched.h>
-+#include <linux/sched/signal.h>
- #include <linux/seq_file.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-@@ -23,7 +26,9 @@
- 
- #include "internal.h"
- 
--static DEFINE_MUTEX(crypto_default_rng_lock);
-+static ____cacheline_aligned_in_smp DEFINE_MUTEX(crypto_reseed_rng_lock);
-+static struct crypto_rng *crypto_reseed_rng;
-+static ____cacheline_aligned_in_smp DEFINE_MUTEX(crypto_default_rng_lock);
- static struct crypto_rng *crypto_default_rng;
- static int crypto_default_rng_refcnt;
- 
-@@ -105,31 +110,37 @@ struct crypto_rng *crypto_alloc_rng(const char *alg_name, u32 type, u32 mask)
- }
- EXPORT_SYMBOL_GPL(crypto_alloc_rng);
- 
--static int crypto_get_default_rng(void)
-+static int crypto_get_rng(struct crypto_rng **rngp)
- {
- 	struct crypto_rng *rng;
- 	int err;
- 
--	mutex_lock(&crypto_default_rng_lock);
--	if (!crypto_default_rng) {
-+	if (!*rngp) {
- 		rng = crypto_alloc_rng("stdrng", 0, 0);
- 		err = PTR_ERR(rng);
- 		if (IS_ERR(rng))
--			goto unlock;
-+			return err;
- 
- 		err = crypto_rng_reset(rng, NULL, crypto_rng_seedsize(rng));
- 		if (err) {
- 			crypto_free_rng(rng);
--			goto unlock;
-+			return err;
- 		}
- 
--		crypto_default_rng = rng;
-+		*rngp = rng;
- 	}
- 
--	crypto_default_rng_refcnt++;
--	err = 0;
-+	return 0;
-+}
- 
--unlock:
-+static int crypto_get_default_rng(void)
-+{
-+	int err;
-+
-+	mutex_lock(&crypto_default_rng_lock);
-+	err = crypto_get_rng(&crypto_default_rng);
-+	if (!err)
-+		crypto_default_rng_refcnt++;
- 	mutex_unlock(&crypto_default_rng_lock);
- 
- 	return err;
-@@ -157,24 +168,33 @@ int __crypto_stdrng_get_bytes(void *buf, unsigned int len)
- EXPORT_SYMBOL_GPL(__crypto_stdrng_get_bytes);
- 
- #if defined(CONFIG_CRYPTO_RNG) || defined(CONFIG_CRYPTO_RNG_MODULE)
--int crypto_del_default_rng(void)
-+static int crypto_del_rng(struct crypto_rng **rngp, int *refcntp,
-+		      struct mutex *lock)
- {
- 	int err = -EBUSY;
- 
--	mutex_lock(&crypto_default_rng_lock);
--	if (crypto_default_rng_refcnt)
-+	mutex_lock(lock);
-+	if (refcntp && *refcntp)
- 		goto out;
- 
--	crypto_free_rng(crypto_default_rng);
--	crypto_default_rng = NULL;
-+	crypto_free_rng(*rngp);
-+	*rngp = NULL;
- 
- 	err = 0;
- 
- out:
--	mutex_unlock(&crypto_default_rng_lock);
-+	mutex_unlock(lock);
- 
- 	return err;
- }
-+
-+int crypto_del_default_rng(void)
-+{
-+	return crypto_del_rng(&crypto_default_rng, &crypto_default_rng_refcnt,
-+			      &crypto_default_rng_lock) ?:
-+	       crypto_del_rng(&crypto_reseed_rng, NULL,
-+			      &crypto_reseed_rng_lock);
-+}
- EXPORT_SYMBOL_GPL(crypto_del_default_rng);
- #endif
- 
-@@ -232,5 +252,108 @@ void crypto_unregister_rngs(struct rng_alg *algs, int count)
- }
- EXPORT_SYMBOL_GPL(crypto_unregister_rngs);
- 
-+static ssize_t crypto_devrandom_read_iter(struct iov_iter *iter, bool reseed)
-+{
-+	struct crypto_rng *rng;
-+	u8 tmp[256];
-+	ssize_t ret;
-+
-+	if (unlikely(!iov_iter_count(iter)))
-+		return 0;
-+
-+	if (reseed) {
-+		u32 flags = 0;
-+
-+		/* If reseeding is requested, acquire a lock on
-+		 * crypto_reseed_rng so it is not swapped out until
-+		 * the initial random bytes are generated.
-+		 *
-+		 * The algorithm implementation is also protected with
-+		 * a separate mutex (drbg->drbg_mutex) around the
-+		 * reseed-and-generate operation.
-+		 */
-+		mutex_lock(&crypto_reseed_rng_lock);
-+
-+		/* If crypto_default_rng is not set, it will be seeded
-+		 * at creation in __crypto_get_default_rng and thus no
-+		 * reseeding is needed.
-+		 */
-+		if (crypto_reseed_rng)
-+			flags |= CRYPTO_TFM_REQ_NEED_RESEED;
-+
-+		ret = crypto_get_rng(&crypto_reseed_rng);
-+		if (ret) {
-+			mutex_unlock(&crypto_reseed_rng_lock);
-+			return ret;
-+		}
-+
-+		rng = crypto_reseed_rng;
-+		crypto_tfm_set_flags(crypto_rng_tfm(rng), flags);
-+	} else {
-+		ret = crypto_get_default_rng();
-+		if (ret)
-+			return ret;
-+		rng = crypto_default_rng;
-+	}
-+
-+	for (;;) {
-+		size_t i, copied;
-+		int err;
-+
-+		i = min_t(size_t, iov_iter_count(iter), sizeof(tmp));
-+		err = crypto_rng_get_bytes(rng, tmp, i);
-+		if (err) {
-+			ret = ret ?: err;
-+			break;
-+		}
-+
-+		copied = copy_to_iter(tmp, i, iter);
-+		ret += copied;
-+		if (!iov_iter_count(iter) || copied != i)
-+			break;
-+
-+		BUILD_BUG_ON(PAGE_SIZE % sizeof(tmp) != 0);
-+		if (ret % PAGE_SIZE == 0) {
-+			if (signal_pending(current))
-+				break;
-+			cond_resched();
-+		}
-+	}
-+
-+	if (reseed)
-+		mutex_unlock(&crypto_reseed_rng_lock);
-+	else
-+		crypto_put_default_rng();
-+	memzero_explicit(tmp, sizeof(tmp));
-+	return ret ? ret : -EFAULT;
-+}
-+
-+static const struct random_extrng crypto_devrandom_rng = {
-+	.extrng_read_iter = crypto_devrandom_read_iter,
-+	.owner = THIS_MODULE,
-+};
-+
-+static int __init crypto_rng_init(void)
-+{
-+	int err;
-+
-+	if (fips_enabled) {
-+		err = crypto_get_default_rng();
-+		if (err)
-+			return err;
-+		crypto_put_default_rng();
-+		random_register_extrng(&crypto_devrandom_rng);
-+	}
-+	return 0;
-+}
-+
-+static void __exit crypto_rng_exit(void)
-+{
-+	random_unregister_extrng();
-+}
-+
-+late_initcall(crypto_rng_init);
-+module_exit(crypto_rng_exit);
-+
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("Random Number Generator");
 diff --git a/crypto/seqiv.c b/crypto/seqiv.c
 index 678bb4145d78..fcc059e7d3db 100644
 --- a/crypto/seqiv.c
@@ -992,7 +696,7 @@ index 505e32911c34..26f7ee0ccf40 100644
  		dmi_decode_ipmi((const struct dmi_header *) dev->device_data);
  
 diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-index 869ac87a4b6a..64908c1ae88f 100644
+index 3e0b7d60269d..8317d264426a 100644
 --- a/drivers/char/ipmi/ipmi_msghandler.c
 +++ b/drivers/char/ipmi/ipmi_msghandler.c
 @@ -34,6 +34,7 @@
@@ -1003,7 +707,7 @@ index 869ac87a4b6a..64908c1ae88f 100644
  #include <linux/delay.h>
  
  #define IPMI_DRIVER_VERSION "39.2"
-@@ -5643,8 +5644,21 @@ static int __init ipmi_init_msghandler_mod(void)
+@@ -5649,8 +5650,21 @@ static int __init ipmi_init_msghandler_mod(void)
  {
  	int rv;
  
@@ -1490,49 +1194,6 @@ index 000000000000..de0a3714a5d4
 +		}
 +	}
 +}
-diff --git a/drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.c b/drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.c
-index 31187ddbb79e..ee413117b0ff 100644
---- a/drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.c
-+++ b/drivers/gpu/drm/amd/amdkfd/kfd_device_queue_manager.c
-@@ -3095,32 +3095,24 @@ int kfd_dqm_suspend_bad_queue_mes(struct kfd_node *knode, u32 pasid, u32 doorbel
- 
- 		list_for_each_entry(q, &qpd->queues_list, list) {
- 			if (q->doorbell_id == doorbell_id && q->properties.is_active) {
--				ret = suspend_all_queues_mes(dqm);
--				if (ret) {
--					dev_err(dev, "Suspending all queues failed");
--					goto out;
--				}
-+				/* suspend all queues will save any good queues and mark the rest as bad */
-+				suspend_all_queues_mes(dqm);
- 
- 				q->properties.is_evicted = true;
- 				q->properties.is_active = false;
- 				decrement_queue_count(dqm, qpd, q);
- 
-+				/* this will remove the bad queue and sched a GPU reset if needed */
- 				ret = remove_queue_mes(dqm, q, qpd);
--				if (ret) {
--					dev_err(dev, "Removing bad queue failed");
--					goto out;
--				}
--
--				ret = resume_all_queues_mes(dqm);
- 				if (ret)
--					dev_err(dev, "Resuming all queues failed");
--
-+					dev_err(dev, "Removing bad queue failed");
-+				/* resume the good queues */
-+				resume_all_queues_mes(dqm);
- 				break;
- 			}
- 		}
- 	}
- 
--out:
- 	dqm_unlock(dqm);
- 	kfd_unref_process(p);
- 	return ret;
 diff --git a/drivers/gpu/drm/amd/pm/swsmu/amdgpu_smu.c b/drivers/gpu/drm/amd/pm/swsmu/amdgpu_smu.c
 index 8faf7de7aaa9..f65bb1dc44ac 100644
 --- a/drivers/gpu/drm/amd/pm/swsmu/amdgpu_smu.c
@@ -1692,7 +1353,7 @@ index ebefa889bc8c..0987eee38bd1 100644
  
  static void adlp_tbt_to_dp_alt_switch_wa(struct intel_encoder *encoder)
 diff --git a/drivers/hwtracing/coresight/coresight-etm4x-core.c b/drivers/hwtracing/coresight/coresight-etm4x-core.c
-index d565a73f0042..0e64fc7c1004 100644
+index a251375db24b..2b5337eaeb6d 100644
 --- a/drivers/hwtracing/coresight/coresight-etm4x-core.c
 +++ b/drivers/hwtracing/coresight/coresight-etm4x-core.c
 @@ -12,6 +12,7 @@
@@ -1703,7 +1364,7 @@ index d565a73f0042..0e64fc7c1004 100644
  #include <linux/io.h>
  #include <linux/err.h>
  #include <linux/fs.h>
-@@ -2527,6 +2528,16 @@ static const struct amba_id etm4_ids[] = {
+@@ -2547,6 +2548,16 @@ static const struct amba_id etm4_ids[] = {
  	{},
  };
  
@@ -1720,7 +1381,7 @@ index d565a73f0042..0e64fc7c1004 100644
  MODULE_DEVICE_TABLE(amba, etm4_ids);
  
  static struct amba_driver etm4x_amba_driver = {
-@@ -2601,6 +2612,11 @@ static int __init etm4x_init(void)
+@@ -2621,6 +2632,11 @@ static int __init etm4x_init(void)
  {
  	int ret;
  
@@ -1732,7 +1393,7 @@ index d565a73f0042..0e64fc7c1004 100644
  	ret = etm4_pm_setup();
  
  	/* etm4_pm_setup() does its own cleanup - exit on error */
-@@ -2627,6 +2643,9 @@ static int __init etm4x_init(void)
+@@ -2647,6 +2663,9 @@ static int __init etm4x_init(void)
  
  static void __exit etm4x_exit(void)
  {
@@ -2837,28 +2498,6 @@ index fc6608e33de4..8cfa3282bf08 100644
  	{} /* Terminating entry */
  };
  
-diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
-index 81d24a270a79..a3e0daff0988 100644
---- a/drivers/pci/msi/msi.c
-+++ b/drivers/pci/msi/msi.c
-@@ -749,7 +749,7 @@ static int msix_capability_init(struct pci_dev *dev, struct msix_entry *entries,
- 
- 	ret = msix_setup_interrupts(dev, entries, nvec, affd);
- 	if (ret)
--		goto out_unmap;
-+		goto out_disable;
- 
- 	/* Disable INTX */
- 	pci_intx_for_msi(dev, 0);
-@@ -770,8 +770,6 @@ static int msix_capability_init(struct pci_dev *dev, struct msix_entry *entries,
- 	pcibios_free_irq(dev);
- 	return 0;
- 
--out_unmap:
--	iounmap(dev->msix_base);
- out_disable:
- 	dev->msix_enabled = 0;
- 	pci_msix_clear_and_set_ctrl(dev, PCI_MSIX_FLAGS_MASKALL | PCI_MSIX_FLAGS_ENABLE, 0);
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
 index dd0025d3914e..e57d10dc843c 100644
 --- a/drivers/pci/quirks.c
@@ -2941,56 +2580,19 @@ index 24960ba9caa9..32597cdb72ef 100644
  	/* Lock the device, then check to see if we were
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
-diff --git a/fs/btrfs/compression.c b/fs/btrfs/compression.c
-index a02b62e0a8f3..2ceb5661e071 100644
---- a/fs/btrfs/compression.c
-+++ b/fs/btrfs/compression.c
-@@ -1191,22 +1191,6 @@ void __cold btrfs_exit_compress(void)
- 	bioset_exit(&btrfs_compressed_bioset);
- }
- 
--/*
-- * The bvec is a single page bvec from a bio that contains folios from a filemap.
-- *
-- * Since the folio may be a large one, and if the bv_page is not a head page of
-- * a large folio, then page->index is unreliable.
-- *
-- * Thus we need this helper to grab the proper file offset.
-- */
--static u64 file_offset_from_bvec(const struct bio_vec *bvec)
--{
--	const struct page *page = bvec->bv_page;
--	const struct folio *folio = page_folio(page);
--
--	return (page_pgoff(folio, page) << PAGE_SHIFT) + bvec->bv_offset;
--}
--
- /*
-  * Copy decompressed data from working buffer to pages.
-  *
-@@ -1259,7 +1243,7 @@ int btrfs_decompress_buf2page(const char *buf, u32 buf_len,
- 		 * cb->start may underflow, but subtracting that value can still
- 		 * give us correct offset inside the full decompressed extent.
- 		 */
--		bvec_offset = file_offset_from_bvec(&bvec) - cb->start;
-+		bvec_offset = page_offset(bvec.bv_page) + bvec.bv_offset - cb->start;
- 
- 		/* Haven't reached the bvec range, exit */
- 		if (decompressed + buf_len <= bvec_offset)
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
-index a2137e19be7d..df268ca70170 100644
+index a2137e19be7d..79ccb6fabc10 100644
 --- a/include/linux/crypto.h
 +++ b/include/linux/crypto.h
-@@ -151,6 +151,9 @@
- #define CRYPTO_TFM_REQ_MAY_SLEEP	0x00000200
+@@ -152,6 +152,8 @@
  #define CRYPTO_TFM_REQ_MAY_BACKLOG	0x00000400
  #define CRYPTO_TFM_REQ_ON_STACK		0x00000800
-+#define CRYPTO_TFM_REQ_NEED_RESEED	0x00001000
-+
-+#define CRYPTO_TFM_FIPS_COMPLIANCE	0x80000000
  
++#define CRYPTO_TFM_FIPS_COMPLIANCE	0x80000000
++
  /*
   * Miscellaneous stuff.
+  */
 diff --git a/include/linux/efi.h b/include/linux/efi.h
 index ccbc35479684..8eb9a1276ba7 100644
 --- a/include/linux/efi.h
@@ -3140,125 +2742,6 @@ index 590ba29c85ab..02153d857531 100644
  }
  
  int module_sig_check(struct load_info *info, int flags)
-diff --git a/net/can/bcm.c b/net/can/bcm.c
-index a4bef2c48a55..bdf53241bd7b 100644
---- a/net/can/bcm.c
-+++ b/net/can/bcm.c
-@@ -58,6 +58,7 @@
- #include <linux/can/skb.h>
- #include <linux/can/bcm.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- #include <linux/spinlock.h>
- #include <net/can.h>
- #include <net/sock.h>
-@@ -92,6 +93,8 @@ MODULE_ALIAS("can-proto-2");
- 
- #define BCM_MIN_NAMELEN CAN_REQUIRED_SIZE(struct sockaddr_can, can_ifindex)
- 
-+static struct workqueue_struct *bcm_wq;
-+
- /*
-  * easy access to the first 64 bit of can(fd)_frame payload. cp->data is
-  * 64 bit aligned so the offset has to be multiples of 8 which is ensured
-@@ -105,6 +108,7 @@ static inline u64 get_u64(const struct canfd_frame *cp, int offset)
- struct bcm_op {
- 	struct list_head list;
- 	struct rcu_head rcu;
-+	struct work_struct work;
- 	int ifindex;
- 	canid_t can_id;
- 	u32 flags;
-@@ -793,9 +797,12 @@ static struct bcm_op *bcm_find_op(struct list_head *ops,
- 	return NULL;
- }
- 
--static void bcm_free_op_rcu(struct rcu_head *rcu_head)
-+static void bcm_free_op_work(struct work_struct *work)
- {
--	struct bcm_op *op = container_of(rcu_head, struct bcm_op, rcu);
-+	struct bcm_op *op = container_of(work, struct bcm_op, work);
-+
-+	hrtimer_cancel(&op->timer);
-+	hrtimer_cancel(&op->thrtimer);
- 
- 	if ((op->frames) && (op->frames != &op->sframe))
- 		kfree(op->frames);
-@@ -803,9 +810,23 @@ static void bcm_free_op_rcu(struct rcu_head *rcu_head)
- 	if ((op->last_frames) && (op->last_frames != &op->last_sframe))
- 		kfree(op->last_frames);
- 
-+	/* the last possible access to op->timer/op->thrtimer has now
-+	 * happened above via hrtimer_cancel() - op->sk is no longer
-+	 * needed by any pending timer callback, so drop our reference
-+	 */
-+	sock_put(op->sk);
-+
- 	kfree(op);
- }
- 
-+static void bcm_free_op_rcu(struct rcu_head *rcu_head)
-+{
-+	struct bcm_op *op = container_of(rcu_head, struct bcm_op, rcu);
-+
-+	INIT_WORK(&op->work, bcm_free_op_work);
-+	queue_work(bcm_wq, &op->work);
-+}
-+
- static void bcm_remove_op(struct bcm_op *op)
- {
- 	hrtimer_cancel(&op->timer);
-@@ -1060,6 +1081,7 @@ static int bcm_tx_setup(struct bcm_msg_head *msg_head, struct msghdr *msg,
- 
- 		/* bcm_can_tx / bcm_tx_timeout_handler needs this */
- 		op->sk = sk;
-+		sock_hold(sk);
- 		op->ifindex = ifindex;
- 
- 		/* initialize uninitialized (kzalloc) structure */
-@@ -1221,6 +1243,7 @@ static int bcm_rx_setup(struct bcm_msg_head *msg_head, struct msghdr *msg,
- 
- 		/* bcm_can_tx / bcm_tx_timeout_handler needs this */
- 		op->sk = sk;
-+		sock_hold(sk);
- 		op->ifindex = ifindex;
- 
- 		/* ifindex for timeout events w/o previous frame reception */
-@@ -1839,11 +1862,15 @@ static int __init bcm_module_init(void)
- {
- 	int err;
- 
-+	bcm_wq = alloc_workqueue("can-bcm-wq", WQ_UNBOUND, 0);
-+	if (!bcm_wq)
-+		return -ENOMEM;
-+
- 	pr_info("can: broadcast manager protocol\n");
- 
- 	err = register_pernet_subsys(&canbcm_pernet_ops);
- 	if (err)
--		return err;
-+		goto register_pernet_failed;
- 
- 	err = register_netdevice_notifier(&canbcm_notifier);
- 	if (err)
-@@ -1861,6 +1888,8 @@ static int __init bcm_module_init(void)
- 	unregister_netdevice_notifier(&canbcm_notifier);
- register_notifier_failed:
- 	unregister_pernet_subsys(&canbcm_pernet_ops);
-+register_pernet_failed:
-+	destroy_workqueue(bcm_wq);
- 	return err;
- }
- 
-@@ -1869,6 +1898,8 @@ static void __exit bcm_module_exit(void)
- 	can_proto_unregister(&bcm_can_proto);
- 	unregister_netdevice_notifier(&canbcm_notifier);
- 	unregister_pernet_subsys(&canbcm_pernet_ops);
-+	rcu_barrier();
-+	destroy_workqueue(bcm_wq);
- }
- 
- module_init(bcm_module_init);
 diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
 index 8e6f3a734ba0..e75d2932475a 100644
 --- a/net/packet/af_packet.c
@@ -3276,20 +2759,6 @@ index 8e6f3a734ba0..e75d2932475a 100644
  		register_prot_hook(sk);
  
  	spin_unlock(&po->bind_lock);
-diff --git a/net/sched/cls_api.c b/net/sched/cls_api.c
-index 20f7f9ee0b35..3e67600a4a1a 100644
---- a/net/sched/cls_api.c
-+++ b/net/sched/cls_api.c
-@@ -4049,6 +4049,9 @@ struct sk_buff *tcf_qevent_handle(struct tcf_qevent *qe, struct Qdisc *sch, stru
- 		skb_do_redirect(skb);
- 		*ret = __NET_XMIT_STOLEN;
- 		return NULL;
-+	case TC_ACT_CONSUMED:
-+		*ret = __NET_XMIT_STOLEN;
-+		return NULL;
- 	}
- 
- 	return skb;
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index 0718e39cedda..10e94a1b8b6e 100644
 --- a/scripts/Makefile.lib
