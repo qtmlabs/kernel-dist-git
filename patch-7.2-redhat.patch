@@ -200,7 +200,7 @@ index 000000000000..85771d74c34f
 +
 +endmenu
 diff --git a/Makefile b/Makefile
-index 11539c3fd405..15a546689db8 100644
+index 2f5bf24e3389..72211366deea 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -358,6 +358,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -221,7 +221,7 @@ index 11539c3fd405..15a546689db8 100644
  ifdef mixed-build
  # ===========================================================================
  # We're called with mixed targets (*config and build targets).
-@@ -1429,6 +1440,8 @@ uapi-asm-generic:
+@@ -1434,6 +1445,8 @@ uapi-asm-generic:
  # Generate some files
  # ---------------------------------------------------------------------------
  
@@ -230,7 +230,7 @@ index 11539c3fd405..15a546689db8 100644
  # KERNELRELEASE can change from a few different places, meaning version.h
  # needs to be updated, so this check is forced on all builds
  
-@@ -1453,7 +1466,13 @@ define filechk_version.h
+@@ -1458,7 +1471,13 @@ define filechk_version.h
  	((c) > 255 ? 255 : (c)))';                                       \
  	echo \#define LINUX_VERSION_MAJOR $(VERSION);                    \
  	echo \#define LINUX_VERSION_PATCHLEVEL $(PATCHLEVEL);            \
@@ -245,7 +245,7 @@ index 11539c3fd405..15a546689db8 100644
  endef
  
  $(version_h): private PATCHLEVEL := $(or $(PATCHLEVEL), 0)
-@@ -2105,6 +2124,23 @@ endif
+@@ -2110,6 +2129,23 @@ endif
  
  ifdef CONFIG_MODULES
  
