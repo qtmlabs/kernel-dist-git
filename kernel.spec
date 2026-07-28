@@ -190,13 +190,13 @@ Summary: The Linux kernel
 %define specrpmversion 7.1.5
 %define specversion 7.1.5
 %define patchversion 7.1
-%define pkgrelease 200
+%define pkgrelease 201
 %define kversion 7
 %define tarfile_release 7.1.5
 # This is needed to do merge window version magic
 %define patchlevel 1
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 200%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 7.1.5
 
@@ -4857,6 +4857,16 @@ fi\
 #
 #
 %changelog
+* Tue Jul 28 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.1.5-1]
+- ASoC: cs42l43: Correct report for forced microphone jack (Charles Keepax)
+- platform/x86/intel-uncore-freq: Fix current_freq_khz after CPU hotplug (Guixiong Wei)
+- xfs: fix exchange-range reflink flag clearing issue with INO1_WRITTEN (Lin Jiapeng)
+- sched_ext: Record an error on errno-only sub-enable failure (Tejun Heo)
+- sched_ext: Enable tick for finite slices on nohz_full (Andrea Righi)
+- sched_ext: Don't warn on core-sched forced idle in put_prev_task_scx() (Tejun Heo)
+- sched_ext: Annotate ksyncs with __rcu in alloc/free_kick_syncs() (Tejun Heo)
+- sched_ext: Skip ops.set_weight() for disabled tasks (Kuba Piecuch)
+
 * Fri Jul 24 2026 Augusto Caringi <acaringi@redhat.com> [7.1.5-0]
 - redhat/configs: fix new config items for aarch64 and s390x (Augusto Caringi)
 - Revert some RHEL only rng patches (Justin M. Forbes)

@@ -1,3 +1,27 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/9fa1cceb384aadc5ca345e7f42522bcaf65b1a4f
+ 9fa1cceb384aadc5ca345e7f42522bcaf65b1a4f ASoC: cs42l43: Correct report for forced microphone jack
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/a59488c7e705a2606c09ec29311c71bd3ac5c4ea
+ a59488c7e705a2606c09ec29311c71bd3ac5c4ea platform/x86/intel-uncore-freq: Fix current_freq_khz after CPU hotplug
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/abd818c67ba5b050e679014d01e2980d48db0f7e
+ abd818c67ba5b050e679014d01e2980d48db0f7e xfs: fix exchange-range reflink flag clearing issue with INO1_WRITTEN
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/05c96bd65f42019666ff789620eb8d2525960642
+ 05c96bd65f42019666ff789620eb8d2525960642 sched_ext: Record an error on errno-only sub-enable failure
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/b203ae7a7d0575537d0f585b17c5f30ed0ce11f7
+ b203ae7a7d0575537d0f585b17c5f30ed0ce11f7 sched_ext: Enable tick for finite slices on nohz_full
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/3ab5289da831c4aa0d8c0fbf00ea515e4eadee81
+ 3ab5289da831c4aa0d8c0fbf00ea515e4eadee81 sched_ext: Don't warn on core-sched forced idle in put_prev_task_scx()
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/11c26dc3aba4e6f61a2c3e46d89e98e4a4bf8f6f
+ 11c26dc3aba4e6f61a2c3e46d89e98e4a4bf8f6f sched_ext: Annotate ksyncs with __rcu in alloc/free_kick_syncs()
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/d5bbe4ebc1d2a4cdc5d6c45c91421c3d5bc50c5a
+ d5bbe4ebc1d2a4cdc5d6c45c91421c3d5bc50c5a sched_ext: Skip ops.set_weight() for disabled tasks
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/87a4913c27ab87d4d5a6a2fa7a2e5915e4f997bd
  87a4913c27ab87d4d5a6a2fa7a2e5915e4f997bd Revert some RHEL only rng patches
 

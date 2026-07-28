@@ -40,25 +40,29 @@
  drivers/media/pci/intel/ipu-bridge.c               |  41 +
  drivers/pci/quirks.c                               |  24 +
  drivers/platform/x86/intel/int3472/discrete.c      |  18 +
+ .../uncore-frequency/uncore-frequency-common.c     |   7 +-
  drivers/usb/core/hub.c                             |   7 +
+ fs/xfs/libxfs/xfs_exchmaps.c                       |  10 +
  include/linux/crypto.h                             |   2 +
  include/linux/efi.h                                |  22 +-
  include/linux/lsm_hook_defs.h                      |   1 +
  include/linux/random.h                             |  10 +
  include/linux/security.h                           |   9 +
  kernel/module/signing.c                            |   9 +-
+ kernel/sched/ext.c                                 |  75 +-
  net/packet/af_packet.c                             |   6 +-
  scripts/Makefile.lib                               |   3 +
  scripts/tags.sh                                    |   2 +
  security/integrity/platform_certs/load_uefi.c      |   6 +-
  security/lockdown/Kconfig                          |  13 +
  security/lockdown/lockdown.c                       |  11 +
+ sound/soc/codecs/cs42l43-jack.c                    |   3 +-
  sound/soc/codecs/rt722-sdca.c                      |  77 +-
  sound/soc/codecs/rt722-sdca.h                      |   4 +
  tools/testing/selftests/bpf/DENYLIST.rhel          |  76 ++
  tools/testing/selftests/bpf/Makefile               |   2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |  31 -
- 60 files changed, 1906 insertions(+), 135 deletions(-)
+ 64 files changed, 1984 insertions(+), 152 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
 index f74da642290a..06c8bb2075e6 100644
@@ -2562,6 +2566,32 @@ index 115bb37577a1..adff564bf3fd 100644
  };
  
  static void int3472_get_con_id_and_polarity(struct int3472_discrete_device *int3472, u8 *type,
+diff --git a/drivers/platform/x86/intel/uncore-frequency/uncore-frequency-common.c b/drivers/platform/x86/intel/uncore-frequency/uncore-frequency-common.c
+index 7070c94324e0..f8137ee92e47 100644
+--- a/drivers/platform/x86/intel/uncore-frequency/uncore-frequency-common.c
++++ b/drivers/platform/x86/intel/uncore-frequency/uncore-frequency-common.c
+@@ -275,15 +275,20 @@ int uncore_freq_add_entry(struct uncore_data *data, int cpu)
+ 			  data->package_id, data->die_id);
+ 	}
+ 
++	/*
++	 * Set the control CPU before any read path so entry recreation after CPU
++	 * hotplug can populate read-only attributes from the new online CPU.
++	 */
++	data->control_cpu = cpu;
+ 	uncore_read(data, &data->initial_min_freq_khz, UNCORE_INDEX_MIN_FREQ);
+ 	uncore_read(data, &data->initial_max_freq_khz, UNCORE_INDEX_MAX_FREQ);
+ 
+ 	ret = create_attr_group(data, data->name);
+ 	if (ret) {
++		data->control_cpu = -1;
+ 		if (data->domain_id != UNCORE_DOMAIN_ID_INVALID)
+ 			ida_free(&intel_uncore_ida, data->instance_id);
+ 	} else {
+-		data->control_cpu = cpu;
+ 		data->valid = true;
+ 	}
+ 
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
 index 24960ba9caa9..32597cdb72ef 100644
 --- a/drivers/usb/core/hub.c
@@ -2580,6 +2610,27 @@ index 24960ba9caa9..32597cdb72ef 100644
  	/* Lock the device, then check to see if we were
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
+diff --git a/fs/xfs/libxfs/xfs_exchmaps.c b/fs/xfs/libxfs/xfs_exchmaps.c
+index 541e33f33167..7fb28c8afef8 100644
+--- a/fs/xfs/libxfs/xfs_exchmaps.c
++++ b/fs/xfs/libxfs/xfs_exchmaps.c
+@@ -959,6 +959,16 @@ xmi_can_exchange_reflink_flags(
+ {
+ 	struct xfs_mount		*mp = req->ip1->i_mount;
+ 
++	/*
++	 * The INO1_WRITTEN optimization can skip exchanging hole and
++	 * unwritten mappings, which means we cannot guarantee that all
++	 * shared extents actually moved to the other file.  Clearing the
++	 * reflink flag of an inode that still holds shared extents breaks
++	 * the CoW write path, so refuse to exchange the flags in that case.
++	 */
++	if (req->flags & XFS_EXCHMAPS_INO1_WRITTEN)
++		return false;
++
+ 	if (hweight32(reflink_state) != 1)
+ 		return false;
+ 	if (req->startoff1 != 0 || req->startoff2 != 0)
 diff --git a/include/linux/crypto.h b/include/linux/crypto.h
 index a2137e19be7d..79ccb6fabc10 100644
 --- a/include/linux/crypto.h
@@ -2742,6 +2793,142 @@ index 590ba29c85ab..02153d857531 100644
  }
  
  int module_sig_check(struct load_info *info, int flags)
+diff --git a/kernel/sched/ext.c b/kernel/sched/ext.c
+index 5d2d19473a82..46f7b33b565b 100644
+--- a/kernel/sched/ext.c
++++ b/kernel/sched/ext.c
+@@ -2985,24 +2985,38 @@ static void set_next_task_scx(struct rq *rq, struct task_struct *p, bool first)
+ 
+ 	/*
+ 	 * @p is getting newly scheduled or got kicked after someone updated its
+-	 * slice. Refresh whether tick can be stopped. See scx_can_stop_tick().
++	 * slice. Update SCX_RQ_CAN_STOP_TICK to reflect whether the tick can be
++	 * stopped. See scx_can_stop_tick().
++	 *
++	 * Moreover, refresh the load_avgs just when transitioning in and out of
++	 * nohz. In the future, we might want to add a mechanism to update
++	 * load_avgs periodically on tick-stopped CPUs.
+ 	 */
+-	if ((p->scx.slice == SCX_SLICE_INF) !=
+-	    (bool)(rq->scx.flags & SCX_RQ_CAN_STOP_TICK)) {
+-		if (p->scx.slice == SCX_SLICE_INF)
++	if (p->scx.slice == SCX_SLICE_INF) {
++		if (!(rq->scx.flags & SCX_RQ_CAN_STOP_TICK)) {
++			/*
++			 * Bypass mode always assigns finite slices, so @p
++			 * can't have an infinite slice while bypassing.
++			 * Therefore, sched_update_tick_dependency() can safely
++			 * evaluate the outgoing task.
++			 */
+ 			rq->scx.flags |= SCX_RQ_CAN_STOP_TICK;
+-		else
+-			rq->scx.flags &= ~SCX_RQ_CAN_STOP_TICK;
++			sched_update_tick_dependency(rq);
+ 
+-		sched_update_tick_dependency(rq);
++			update_other_load_avgs(rq);
++		}
++	} else {
++		if (rq->scx.flags & SCX_RQ_CAN_STOP_TICK) {
++			rq->scx.flags &= ~SCX_RQ_CAN_STOP_TICK;
++			update_other_load_avgs(rq);
++		}
+ 
+ 		/*
+-		 * For now, let's refresh the load_avgs just when transitioning
+-		 * in and out of nohz. In the future, we might want to add a
+-		 * mechanism which calls the following periodically on
+-		 * tick-stopped CPUs.
++		 * @rq still references the outgoing scheduling context. A finite
++		 * slice is sufficient by itself to require the tick.
+ 		 */
+-		update_other_load_avgs(rq);
++		if (tick_nohz_full_cpu(cpu_of(rq)))
++			tick_nohz_dep_set_cpu(cpu_of(rq), TICK_DEP_BIT_SCHED);
+ 	}
+ }
+ 
+@@ -3097,9 +3111,14 @@ static void put_prev_task_scx(struct rq *rq, struct task_struct *p,
+ 		 * sched_class, %SCX_OPS_ENQ_LAST must be set. Tell
+ 		 * ops.enqueue() that @p is the only one available for this cpu,
+ 		 * which should trigger an explicit follow-up scheduling event.
++		 *
++		 * Core scheduling can force this CPU idle while @p stays
++		 * runnable. @p's cookie then won't match the core's, so skip
++		 * the warning in that case.
+ 		 */
+ 		if (next && sched_class_above(&ext_sched_class, next->sched_class)) {
+-			WARN_ON_ONCE(!(sch->ops.flags & SCX_OPS_ENQ_LAST));
++			WARN_ON_ONCE(sched_cpu_cookie_match(rq, p) &&
++				     !(sch->ops.flags & SCX_OPS_ENQ_LAST));
+ 			do_enqueue_task(rq, p, SCX_ENQ_LAST, -1);
+ 		} else {
+ 			do_enqueue_task(rq, p, 0, -1);
+@@ -3904,6 +3923,17 @@ static void reweight_task_scx(struct rq *rq, struct task_struct *p,
+ 	if (task_dead_and_done(p))
+ 		return;
+ 
++	/*
++	 * When switching sched_class away from SCX, reweight_task_scx()
++	 * is called _after_ scx_disable_task(). Skip calling ops.set_weight()
++	 * since the BPF scheduler may have already forgotten the task in
++	 * ops.disable().
++	 * p->scx.weight will be recalculated in scx_enable_task() if the task
++	 * ever returns to SCX class.
++	 */
++	if (scx_get_task_state(p) != SCX_TASK_ENABLED)
++		return;
++
+ 	p->scx.weight = sched_weight_to_cgroup(scale_load_down(lw->weight));
+ 	if (SCX_HAS_OP(sch, set_weight))
+ 		SCX_CALL_OP_TASK(sch, set_weight, rq, p, p->scx.weight);
+@@ -4280,6 +4310,15 @@ bool scx_can_stop_tick(struct rq *rq)
+ 	if (p->sched_class != &ext_sched_class)
+ 		return true;
+ 
++	/*
++	 * @rq->curr may still reference an outgoing EXT task after it has been
++	 * dequeued. If no EXT tasks are accounted on @rq, ignore its stale
++	 * slice state. If another task is dispatched from a DSQ,
++	 * set_next_task_scx() will update the dependency for the incoming task.
++	 */
++	if (!rq->scx.nr_running)
++		return true;
++
+ 	if (scx_bypassing(sch, cpu_of(rq)))
+ 		return false;
+ 
+@@ -5604,7 +5643,7 @@ static void free_kick_syncs(void)
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		struct scx_kick_syncs **ksyncs = per_cpu_ptr(&scx_kick_syncs, cpu);
++		struct scx_kick_syncs __rcu **ksyncs = per_cpu_ptr(&scx_kick_syncs, cpu);
+ 		struct scx_kick_syncs *to_free;
+ 
+ 		to_free = rcu_replace_pointer(*ksyncs, NULL, true);
+@@ -6527,7 +6566,7 @@ static int alloc_kick_syncs(void)
+ 	 * can exceed percpu allocator limits on large machines.
+ 	 */
+ 	for_each_possible_cpu(cpu) {
+-		struct scx_kick_syncs **ksyncs = per_cpu_ptr(&scx_kick_syncs, cpu);
++		struct scx_kick_syncs __rcu **ksyncs = per_cpu_ptr(&scx_kick_syncs, cpu);
+ 		struct scx_kick_syncs *new_ksyncs;
+ 
+ 		WARN_ON_ONCE(rcu_access_pointer(*ksyncs));
+@@ -7401,6 +7440,12 @@ static void scx_sub_enable_workfn(struct kthread_work *work)
+ 	percpu_up_write(&scx_fork_rwsem);
+ err_disable:
+ 	mutex_unlock(&scx_enable_mutex);
++	/*
++	 * Some enable failures only return an errno (e.g. -ENOMEM from an
++	 * allocation) without calling scx_error(). Record it so
++	 * scx_flush_disable_work() runs the disable and ops.exit() fires.
++	 */
++	scx_error(sch, "scx_sub_enable() failed (%d)", ret);
+ 	scx_flush_disable_work(sch);
+ 	cmd->ret = 0;
+ }
 diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
 index 8e6f3a734ba0..e75d2932475a 100644
 --- a/net/packet/af_packet.c
@@ -2857,6 +3044,27 @@ index 8d46886d2cca..14a9cdff942b 100644
  static struct security_hook_list lockdown_hooks[] __ro_after_init = {
  	LSM_HOOK_INIT(locked_down, lockdown_is_locked_down),
  };
+diff --git a/sound/soc/codecs/cs42l43-jack.c b/sound/soc/codecs/cs42l43-jack.c
+index 3e04e6897b14..e88109979c18 100644
+--- a/sound/soc/codecs/cs42l43-jack.c
++++ b/sound/soc/codecs/cs42l43-jack.c
+@@ -310,6 +310,7 @@ irqreturn_t cs42l43_bias_detect_clamp(int irq, void *data)
+ #define CS42L43_JACK_ABSENT 0x0
+ 
+ #define CS42L43_JACK_OPTICAL (SND_JACK_MECHANICAL | SND_JACK_AVOUT)
++#define CS42L43_JACK_MICROPHONE (SND_JACK_MECHANICAL | SND_JACK_MICROPHONE)
+ #define CS42L43_JACK_HEADPHONE (SND_JACK_MECHANICAL | SND_JACK_HEADPHONE)
+ #define CS42L43_JACK_HEADSET (SND_JACK_MECHANICAL | SND_JACK_HEADSET)
+ #define CS42L43_JACK_LINEOUT (SND_JACK_MECHANICAL | SND_JACK_LINEOUT)
+@@ -871,7 +872,7 @@ static const struct cs42l43_jack_override_mode {
+ 		.hsdet_mode = CS42L43_JACK_3_POLE_SWITCHES,
+ 		.mic_ctrl = (0x3 << CS42L43_JACK_STEREO_CONFIG_SHIFT) |
+ 			    CS42L43_HS1_BIAS_EN_MASK | CS42L43_HS2_BIAS_EN_MASK,
+-		.report = CS42L43_JACK_LINEIN,
++		.report = CS42L43_JACK_MICROPHONE,
+ 	},
+ 	[CS42L43_JACK_RAW_OPTICAL] = {
+ 		.hsdet_mode = CS42L43_JACK_3_POLE_SWITCHES,
 diff --git a/sound/soc/codecs/rt722-sdca.c b/sound/soc/codecs/rt722-sdca.c
 index 79b8b7e70a33..23d2f63d68ef 100644
 --- a/sound/soc/codecs/rt722-sdca.c
