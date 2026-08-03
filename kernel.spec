@@ -187,18 +187,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 # define buildid .local
-%define specrpmversion 7.1.5
-%define specversion 7.1.5
+%define specrpmversion 7.1.6
+%define specversion 7.1.6
 %define patchversion 7.1
-%define pkgrelease 201
+%define pkgrelease 200
 %define kversion 7
-%define tarfile_release 7.1.5
+%define tarfile_release 7.1.6
 # This is needed to do merge window version magic
 %define patchlevel 1
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 7.1.5
+%define kabiversion 7.1.6
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1593,7 +1593,7 @@ AutoReqProv: no\
 %description %{?1:%{1}-}debuginfo\
 This package provides debug information for package %{name}%{?1:-%{1}}.\
 This is required to use SystemTap with %{name}%{?1:-%{1}}-%{KVERREL}.\
-%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} --keep-section '.BTF' -p '.*\/usr\/src\/kernels/.*|XXX' -o ignored-debuginfo.list -p '/.*/%%{KVERREL_RE}%{?1:[+]%{1}}/.*|/.*%%{KVERREL_RE}%{?1:\+%{1}}(\.debug)?' -o debuginfo%{?1}.list}\
+%{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} --keep-section '.BTF' --keep-section '.rustc' -p '.*\/usr\/src\/kernels/.*|XXX' -o ignored-debuginfo.list -p '/.*/%%{KVERREL_RE}%{?1:[+]%{1}}/.*|/.*%%{KVERREL_RE}%{?1:\+%{1}}(\.debug)?' -o debuginfo%{?1}.list}\
 %{nil}
 
 #
@@ -2826,6 +2826,14 @@ BuildKernel() {
     fi
     if [ -f tools/objtool/fixdep ]; then
       cp -a tools/objtool/fixdep $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/tools/objtool/ || :
+    fi
+    if ls rust/*.rmeta >/dev/null 2>&1; then
+      mkdir -p $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/rust
+      cp -a rust/*.rmeta $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/rust/ || :
+    fi
+    if ls rust/*.so >/dev/null 2>&1; then
+      mkdir -p $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/rust
+      cp -a rust/*.so $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/rust/ || :
     fi
     if [ -d arch/$Arch/scripts ]; then
       cp -a arch/$Arch/scripts $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/arch/%{_arch} || :
@@ -4857,6 +4865,21 @@ fi\
 #
 #
 %changelog
+* Mon Aug 03 2026 Augusto Caringi <acaringi@redhat.com> [7.1.6-0]
+- New config for stable (Justin M. Forbes)
+- acpi: battery: Sanitise model_number by dropping unprintable characters (Kate Hsuan)
+- redhat: configs: Enable AMD ISP4 MIPI camera solution (Kate Hsuan)
+- media: platform: amd: add DRM_AMDGPU dependency (Arnd Bergmann)
+- media: platform: amd: isp4: drop stale list reinit before free (Bin Du)
+- media: platform: amd: isp4 debug fs logging and more descriptive errors (Bin Du)
+- media: platform: amd: isp4 video node and buffers handling added (Bin Du)
+- media: platform: amd: isp4 subdev and firmware loading handling added (Bin Du)
+- media: platform: amd: Add isp4 fw and hw interface (Bin Du)
+- media: platform: amd: low level support for isp4 firmware (Bin Du)
+- media: platform: amd: Introduce amd isp4 capture driver (Bin Du)
+- serial: 8250_mid: Fix NULL function pointer dereference on DNV/ICX-D/SNR platforms (Jiangshan Yi)
+- Linux v7.1.6
+
 * Tue Jul 28 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.1.5-1]
 - ASoC: cs42l43: Correct report for forced microphone jack (Charles Keepax)
 - platform/x86/intel-uncore-freq: Fix current_freq_khz after CPU hotplug (Guixiong Wei)

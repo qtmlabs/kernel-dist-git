@@ -1,3 +1,30 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/73346d0cf08db8358dd8ce372c6b5605a77944c6
+ 73346d0cf08db8358dd8ce372c6b5605a77944c6 media: platform: amd: add DRM_AMDGPU dependency
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/4e39a03df0faeadcec9d99ede2cc53e60fc97fc7
+ 4e39a03df0faeadcec9d99ede2cc53e60fc97fc7 media: platform: amd: isp4: drop stale list reinit before free
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/a25aadb4e9fa50d660191d3e671fdc90731f1b90
+ a25aadb4e9fa50d660191d3e671fdc90731f1b90 media: platform: amd: isp4 debug fs logging and more descriptive errors
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/b9d72b2a305489b0a084c800109a16a68f41b250
+ b9d72b2a305489b0a084c800109a16a68f41b250 media: platform: amd: isp4 video node and buffers handling added
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/59ed38328c8378185de44dba741b4138ca6500aa
+ 59ed38328c8378185de44dba741b4138ca6500aa media: platform: amd: isp4 subdev and firmware loading handling added
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/11af2852465177f2bdeda7e90ed5de0d557bf86d
+ 11af2852465177f2bdeda7e90ed5de0d557bf86d media: platform: amd: Add isp4 fw and hw interface
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/ebbb4c12a58f5fa99d996fe0742b9b9c03fec7c8
+ ebbb4c12a58f5fa99d996fe0742b9b9c03fec7c8 media: platform: amd: low level support for isp4 firmware
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/08fa27ef3838b4d294691e5f9f7bb88110d84fad
+ 08fa27ef3838b4d294691e5f9f7bb88110d84fad media: platform: amd: Introduce amd isp4 capture driver
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/339af46d6f568742b005e846b113433fac929130
+ 339af46d6f568742b005e846b113433fac929130 serial: 8250_mid: Fix NULL function pointer dereference on DNV/ICX-D/SNR platforms
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/9fa1cceb384aadc5ca345e7f42522bcaf65b1a4f
  9fa1cceb384aadc5ca345e7f42522bcaf65b1a4f ASoC: cs42l43: Correct report for forced microphone jack
 
@@ -30,6 +57,9 @@ https://gitlab.com/cki-project/kernel-ark/-/commit/4735f2eec63a6a192b69a79921f85
 
 https://gitlab.com/cki-project/kernel-ark/-/commit/ce4210e437cef5c58d496117632473f6ad20f1d1
  ce4210e437cef5c58d496117632473f6ad20f1d1 net/sched: cls_api: Handle TC_ACT_CONSUMED in tcf_qevent_handle
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/1077be9b9866a8a450b9b2620910e33fd8b3be76
+ 1077be9b9866a8a450b9b2620910e33fd8b3be76 acpi: battery: Sanitise model_number by dropping unprintable characters
 
 https://gitlab.com/cki-project/kernel-ark/-/commit/038190229a7c4ce9fd78a0ece5998a483e917b10
  038190229a7c4ce9fd78a0ece5998a483e917b10 Revert "PCI/MSI: Unmap MSI-X region on error"
