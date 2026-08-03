@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/9f166bfb17130303352cef32fca1860d76fe60b1
+ 9f166bfb17130303352cef32fca1860d76fe60b1 vhost: reset the vring metadata cache on vring reconfiguration
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/73346d0cf08db8358dd8ce372c6b5605a77944c6
  73346d0cf08db8358dd8ce372c6b5605a77944c6 media: platform: amd: add DRM_AMDGPU dependency
 

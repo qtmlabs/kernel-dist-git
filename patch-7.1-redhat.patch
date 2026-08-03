@@ -53,6 +53,7 @@
  drivers/pci/quirks.c                               |   24 +
  drivers/platform/x86/intel/int3472/discrete.c      |   18 +
  drivers/usb/core/hub.c                             |    7 +
+ drivers/vhost/vhost.c                              |    8 +
  fs/xfs/libxfs/xfs_exchmaps.c                       |   10 +
  include/linux/crypto.h                             |    2 +
  include/linux/efi.h                                |   22 +-
@@ -70,7 +71,7 @@
  tools/testing/selftests/bpf/DENYLIST.rhel          |   76 ++
  tools/testing/selftests/bpf/Makefile               |    2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |   31 -
- 72 files changed, 5902 insertions(+), 120 deletions(-)
+ 73 files changed, 5910 insertions(+), 120 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
 index f74da642290a..3a0e977fc9cf 100644
@@ -6573,6 +6574,25 @@ index 24960ba9caa9..32597cdb72ef 100644
  	/* Lock the device, then check to see if we were
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index db329a6f6145..89062f60e369 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -2126,6 +2126,14 @@ static long vhost_vring_set_num_addr(struct vhost_dev *d,
+ 		BUG();
+ 	}
+ 
++	/*
++	 * The metadata cache holds the IOTLB mapping that backed the previous
++	 * desc/avail/used addresses and vring size, both of which are being
++	 * replaced here.  iotlb_access_ok() takes a cache hit as proof that the
++	 * region was validated, so the stale entries have to go.
++	 */
++	__vhost_vq_meta_reset(vq);
++
+ 	mutex_unlock(&vq->mutex);
+ 
+ 	return r;
 diff --git a/fs/xfs/libxfs/xfs_exchmaps.c b/fs/xfs/libxfs/xfs_exchmaps.c
 index 541e33f33167..7fb28c8afef8 100644
 --- a/fs/xfs/libxfs/xfs_exchmaps.c
