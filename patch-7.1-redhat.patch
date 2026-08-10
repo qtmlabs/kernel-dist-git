@@ -54,6 +54,7 @@
  drivers/platform/x86/intel/int3472/discrete.c      |   18 +
  drivers/usb/core/hub.c                             |    7 +
  drivers/vhost/vhost.c                              |    8 +
+ fs/smb/client/dir.c                                |    2 +
  fs/xfs/libxfs/xfs_exchmaps.c                       |   10 +
  include/linux/crypto.h                             |    2 +
  include/linux/efi.h                                |   22 +-
@@ -71,7 +72,7 @@
  tools/testing/selftests/bpf/DENYLIST.rhel          |   76 ++
  tools/testing/selftests/bpf/Makefile               |    2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |   31 -
- 73 files changed, 5910 insertions(+), 120 deletions(-)
+ 74 files changed, 5912 insertions(+), 120 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
 index f74da642290a..3a0e977fc9cf 100644
@@ -121,7 +122,7 @@ index f74da642290a..3a0e977fc9cf 100644
  M:	Maxim Levitsky <maximlevitsky@gmail.com>
  M:	Alex Dubov <oakad@yahoo.com>
 diff --git a/Makefile b/Makefile
-index 4643c9e03a20..4fd7b9e2703a 100644
+index fa62d2054cd4..a0dbf939d671 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -356,6 +356,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -142,7 +143,7 @@ index 4643c9e03a20..4fd7b9e2703a 100644
  ifdef mixed-build
  # ===========================================================================
  # We're called with mixed targets (*config and build targets).
-@@ -1423,6 +1434,8 @@ uapi-asm-generic:
+@@ -1421,6 +1432,8 @@ uapi-asm-generic:
  # Generate some files
  # ---------------------------------------------------------------------------
  
@@ -151,7 +152,7 @@ index 4643c9e03a20..4fd7b9e2703a 100644
  # KERNELRELEASE can change from a few different places, meaning version.h
  # needs to be updated, so this check is forced on all builds
  
-@@ -2088,6 +2101,23 @@ endif
+@@ -2086,6 +2099,23 @@ endif
  
  ifdef CONFIG_MODULES
  
@@ -6593,6 +6594,19 @@ index db329a6f6145..89062f60e369 100644
  	mutex_unlock(&vq->mutex);
  
  	return r;
+diff --git a/fs/smb/client/dir.c b/fs/smb/client/dir.c
+index e4295a5b55b3..99275c7473f9 100644
+--- a/fs/smb/client/dir.c
++++ b/fs/smb/client/dir.c
+@@ -1126,6 +1126,8 @@ int cifs_tmpfile(struct mnt_idmap *idmap, struct inode *dir,
+ 	} while (unlikely(rc == -EEXIST) && ++retries < max_retries);
+ 
+ 	if (rc) {
++		if (rc == -ENOENT)
++			rc = -EOPNOTSUPP;
+ 		cifs_del_pending_open(&open);
+ 		goto out;
+ 	}
 diff --git a/fs/xfs/libxfs/xfs_exchmaps.c b/fs/xfs/libxfs/xfs_exchmaps.c
 index 541e33f33167..7fb28c8afef8 100644
 --- a/fs/xfs/libxfs/xfs_exchmaps.c

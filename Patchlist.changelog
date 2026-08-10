@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/5de67062b0a9c23cbe099dd78cbc538a0f9fb8f7
+ 5de67062b0a9c23cbe099dd78cbc538a0f9fb8f7 smb/client: return EOPNOTSUPP for unsupported O_TMPFILE
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/9f166bfb17130303352cef32fca1860d76fe60b1
  9f166bfb17130303352cef32fca1860d76fe60b1 vhost: reset the vring metadata cache on vring reconfiguration
 
