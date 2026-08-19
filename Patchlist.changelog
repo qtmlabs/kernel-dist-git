@@ -1,3 +1,12 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/f616039addd234a947d2a44a67b5e79894940b50
+ f616039addd234a947d2a44a67b5e79894940b50 packet: use consistent hard_header_len in non-ring send paths
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/742df11dcd89b69ee97b7e4c5c43faf434b8b22b
+ 742df11dcd89b69ee97b7e4c5c43faf434b8b22b platform/x86: int3472: Increase handshake GPIO delay to 200 ms
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/51caa392b8b7e4f64b2624787fd6ff8a320bf277
+ 51caa392b8b7e4f64b2624787fd6ff8a320bf277 drm/xe: Fix DPT allocation paths.
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/5de67062b0a9c23cbe099dd78cbc538a0f9fb8f7
  5de67062b0a9c23cbe099dd78cbc538a0f9fb8f7 smb/client: return EOPNOTSUPP for unsupported O_TMPFILE
 
