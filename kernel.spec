@@ -187,18 +187,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 # define buildid .local
-%define specrpmversion 7.1.9
-%define specversion 7.1.9
+%define specrpmversion 7.1.10
+%define specversion 7.1.10
 %define patchversion 7.1
 %define pkgrelease 200
 %define kversion 7
-%define tarfile_release 7.1.9
+%define tarfile_release 7.1.10
 # This is needed to do merge window version magic
 %define patchlevel 1
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 200%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 7.1.9
+%define kabiversion 7.1.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4865,6 +4865,10 @@ fi\
 #
 #
 %changelog
+* Sun Aug 23 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.1.10-0]
+- ALSA: hda/realtek: add quirk for Framework F111:0010 (Daniel Schaefer)
+- Linux v7.1.10
+
 * Wed Aug 19 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.1.9-0]
 - packet: use consistent hard_header_len in non-ring send paths (Qihang Tang)
 - platform/x86: int3472: Increase handshake GPIO delay to 200 ms (Hans de Goede)

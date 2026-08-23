@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/366f0a4f8abcf72481ac40f6752754b8d2092c9a
+ 366f0a4f8abcf72481ac40f6752754b8d2092c9a ALSA: hda/realtek: add quirk for Framework F111:0010
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/f616039addd234a947d2a44a67b5e79894940b50
  f616039addd234a947d2a44a67b5e79894940b50 packet: use consistent hard_header_len in non-ring send paths
 
