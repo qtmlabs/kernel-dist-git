@@ -1,0 +1,239 @@
+From 95b052ec863486c354d2616bf79dd86dc3ad34de Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Mon, 23 Mar 2026 20:55:31 +0700
+Subject: [PATCH 1/4] drm/i915: Fix tiled panic write when pitch != width * cpp
+
+---
+ drivers/gpu/drm/i915/gem/i915_gem_pages.c | 4 ++--
+ drivers/gpu/drm/xe/display/xe_panic.c     | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/gem/i915_gem_pages.c b/drivers/gpu/drm/i915/gem/i915_gem_pages.c
+index df35bdb755e4..eed7a953a362 100644
+--- a/drivers/gpu/drm/i915/gem/i915_gem_pages.c
++++ b/drivers/gpu/drm/i915/gem/i915_gem_pages.c
+@@ -396,7 +396,7 @@ static void i915_gem_object_panic_map_set_pixel(struct drm_scanout_buffer *sb, u
+ 						unsigned int y, u32 color)
+ {
+ 	struct intel_framebuffer *fb = (struct intel_framebuffer *)sb->private;
+-	unsigned int offset = fb->panic_tiling(sb->width, x, y);
++	unsigned int offset = fb->panic_tiling(sb->pitch[0] / sb->format->cpp[0], x, y);
+ 
+ 	iosys_map_wr(&sb->map[0], offset, u32, color);
+ }
+@@ -415,7 +415,7 @@ static void i915_gem_object_panic_page_set_pixel(struct drm_scanout_buffer *sb,
+ 	struct intel_panic *panic = fb->panic;
+ 
+ 	if (fb->panic_tiling)
+-		offset = fb->panic_tiling(sb->width, x, y);
++		offset = fb->panic_tiling(sb->pitch[0] / sb->format->cpp[0], x, y);
+ 	else
+ 		offset = y * sb->pitch[0] + x * sb->format->cpp[0];
+ 
+diff --git a/drivers/gpu/drm/xe/display/xe_panic.c b/drivers/gpu/drm/xe/display/xe_panic.c
+index bebb21d617f0..012794207407 100644
+--- a/drivers/gpu/drm/xe/display/xe_panic.c
++++ b/drivers/gpu/drm/xe/display/xe_panic.c
+@@ -43,7 +43,7 @@ static void xe_panic_page_set_pixel(struct drm_scanout_buffer *sb, unsigned int
+ 	unsigned int offset;
+ 
+ 	if (fb->panic_tiling)
+-		offset = fb->panic_tiling(sb->width, x, y);
++		offset = fb->panic_tiling(sb->pitch[0] / sb->format->cpp[0], x, y);
+ 	else
+ 		offset = y * sb->pitch[0] + x * sb->format->cpp[0];
+ 
+-- 
+2.55.0
+
+
+From c551c1908862fa01dfa0d023be0b1d07c252812a Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Mon, 23 Mar 2026 21:40:30 +0700
+Subject: [PATCH 2/4] drm/i915: Always disable compression when disabling
+ tiling
+
+---
+ drivers/gpu/drm/i915/display/skl_universal_plane.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/display/skl_universal_plane.c b/drivers/gpu/drm/i915/display/skl_universal_plane.c
+index 11ba42c67e3e..566c4b864ea8 100644
+--- a/drivers/gpu/drm/i915/display/skl_universal_plane.c
++++ b/drivers/gpu/drm/i915/display/skl_universal_plane.c
+@@ -2828,11 +2828,9 @@ static void skl_disable_tiling(struct intel_plane *plane)
+ 	u32 plane_ctl;
+ 
+ 	plane_ctl = intel_de_read(display, PLANE_CTL(plane->pipe, plane->id));
++	plane_ctl &= ~PLANE_CTL_RENDER_DECOMPRESSION_ENABLE;
+ 
+-	if (intel_fb_uses_dpt(fb)) {
+-		/* if DPT is enabled, keep tiling, but disable compression */
+-		plane_ctl &= ~PLANE_CTL_RENDER_DECOMPRESSION_ENABLE;
+-	} else {
++	if (!intel_fb_uses_dpt(fb)) {
+ 		/* if DPT is not supported, disable tiling, and update stride */
+ 		u32 stride = state->view.color_plane[0].scanout_stride / 64;
+ 
+-- 
+2.55.0
+
+
+From e2a706d08dd66a003b763fd35f2ce4992b3cbad5 Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Mon, 7 Jul 2025 10:43:40 +0700
+Subject: [PATCH 3/4] drm: Allow disabling automatic DRM master acquisition
+ semantics
+
+---
+ drivers/gpu/drm/Kconfig    | 17 +++++++++++++++++
+ drivers/gpu/drm/drm_auth.c | 27 ++++++++++++++++++---------
+ 2 files changed, 35 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 8f5a8d3012e4..a48135585d2b 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -33,6 +33,23 @@ endmenu
+ 
+ if DRM
+ 
++config DRM_AUTO_MASTER
++	bool "Grant master privileges to the first client to open a primary node"
++	depends on DRM
++	default y
++	help
++	  Choose this option to automatically grant master privileges to the
++	  first client to open a primary device node.
++
++	  Say "N" here if your operating system has a privileged system service
++	  (e.g. systemd-logind) that mediates DRM master access between multiple
++	  login sessions.
++
++	  If unsure, say "Y".
++
++	  This can be overridden by the drm.auto_master kernel parameter or by
++	  writing to the /sys/module/drm/parameters/auto_master sysfs entry.
++
+ config DRM_MIPI_DBI
+ 	tristate
+ 	depends on DRM
+diff --git a/drivers/gpu/drm/drm_auth.c b/drivers/gpu/drm/drm_auth.c
+index e17bb0f1f9e0..291c1f33069d 100644
+--- a/drivers/gpu/drm/drm_auth.c
++++ b/drivers/gpu/drm/drm_auth.c
+@@ -30,6 +30,8 @@
+ 
+ #include <linux/export.h>
+ #include <linux/slab.h>
++#include <linux/kconfig.h>
++#include <linux/moduleparam.h>
+ 
+ #include <drm/drm_auth.h>
+ #include <drm/drm_drv.h>
+@@ -149,17 +151,18 @@ struct drm_master *drm_master_create(struct drm_device *dev)
+ 	return master;
+ }
+ 
+-static void drm_set_master(struct drm_device *dev, struct drm_file *fpriv,
+-			   bool new_master)
++static void drm_set_master(struct drm_device *dev, struct drm_file *fpriv)
+ {
+ 	dev->master = drm_master_get(fpriv->master);
+ 	if (dev->driver->master_set)
+-		dev->driver->master_set(dev, fpriv, new_master);
++		dev->driver->master_set(dev, fpriv, !fpriv->was_master);
+ 
+ 	fpriv->was_master = true;
++	fpriv->authenticated = true;
+ }
+ 
+-static int drm_new_set_master(struct drm_device *dev, struct drm_file *fpriv)
++static int drm_new_master(struct drm_device *dev, struct drm_file *fpriv,
++			  bool set_master)
+ {
+ 	struct drm_master *old_master;
+ 	struct drm_master *new_master;
+@@ -176,9 +179,9 @@ static int drm_new_set_master(struct drm_device *dev, struct drm_file *fpriv)
+ 	spin_unlock(&fpriv->master_lookup_lock);
+ 
+ 	fpriv->is_master = 1;
+-	fpriv->authenticated = 1;
+ 
+-	drm_set_master(dev, fpriv, true);
++	if (set_master)
++		drm_set_master(dev, fpriv);
+ 
+ 	if (old_master)
+ 		drm_master_put(&old_master);
+@@ -263,7 +266,7 @@ int drm_setmaster_ioctl(struct drm_device *dev, void *data,
+ 		return -EINVAL;
+ 
+ 	if (!file_priv->is_master)
+-		return drm_new_set_master(dev, file_priv);
++		return drm_new_master(dev, file_priv, true);
+ 
+ 	if (file_priv->master->lessor != NULL) {
+ 		drm_dbg_lease(dev,
+@@ -272,7 +275,7 @@ int drm_setmaster_ioctl(struct drm_device *dev, void *data,
+ 		return -EINVAL;
+ 	}
+ 
+-	drm_set_master(dev, file_priv, false);
++	drm_set_master(dev, file_priv);
+ 
+ 	return ret;
+ }
+@@ -314,6 +317,12 @@ int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
+ 	return ret;
+ }
+ 
++static bool auto_master = IS_ENABLED(CONFIG_DRM_AUTO_MASTER);
++module_param(auto_master, bool, 0644);
++MODULE_PARM_DESC(
++	auto_master,
++	"Grant master privileges to the first client to open a primary node");
++
+ int drm_master_open(struct drm_file *file_priv)
+ {
+ 	struct drm_device *dev = file_priv->minor->dev;
+@@ -324,7 +333,7 @@ int drm_master_open(struct drm_file *file_priv)
+ 	 */
+ 	guard(mutex)(&dev->master_mutex);
+ 	if (!dev->master) {
+-		ret = drm_new_set_master(dev, file_priv);
++		ret = drm_new_master(dev, file_priv, auto_master);
+ 	} else {
+ 		spin_lock(&file_priv->master_lookup_lock);
+ 		file_priv->master = drm_master_get(dev->master);
+-- 
+2.55.0
+
+
+From e3fed1d2682a1595b8a7bd43d45bfeca18cf27f5 Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Tue, 18 Aug 2026 20:29:33 +0700
+Subject: [PATCH 4/4] hrtimer: Allow disabling deferred rearming of the hrtimer
+ interrupt
+
+---
+ kernel/time/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
+index 02aac7c5aa76..3cd0826be081 100644
+--- a/kernel/time/Kconfig
++++ b/kernel/time/Kconfig
+@@ -56,7 +56,8 @@ config GENERIC_CMOS_UPDATE
+ 
+ # Deferred rearming of the hrtimer interrupt
+ config HRTIMER_REARM_DEFERRED
+-       def_bool y
++       bool "Deferred rearming of the hrtimer interrupt"
++       default y
+        depends on GENERIC_ENTRY && HAVE_GENERIC_TIF_BITS
+        depends on HIGH_RES_TIMERS && SCHED_HRTICK
+ 
+-- 
+2.55.0
+
