@@ -1,7 +1,7 @@
 From 95b052ec863486c354d2616bf79dd86dc3ad34de Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 23 Mar 2026 20:55:31 +0700
-Subject: [PATCH 1/4] drm/i915: Fix tiled panic write when pitch != width * cpp
+Subject: [PATCH 1/5] drm/i915: Fix tiled panic write when pitch != width * cpp
 
 ---
  drivers/gpu/drm/i915/gem/i915_gem_pages.c | 4 ++--
@@ -50,7 +50,7 @@ index bebb21d617f0..012794207407 100644
 From c551c1908862fa01dfa0d023be0b1d07c252812a Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 23 Mar 2026 21:40:30 +0700
-Subject: [PATCH 2/4] drm/i915: Always disable compression when disabling
+Subject: [PATCH 2/5] drm/i915: Always disable compression when disabling
  tiling
 
 ---
@@ -82,7 +82,7 @@ index 11ba42c67e3e..566c4b864ea8 100644
 From e2a706d08dd66a003b763fd35f2ce4992b3cbad5 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 7 Jul 2025 10:43:40 +0700
-Subject: [PATCH 3/4] drm: Allow disabling automatic DRM master acquisition
+Subject: [PATCH 3/5] drm: Allow disabling automatic DRM master acquisition
  semantics
 
 ---
@@ -213,7 +213,7 @@ index e17bb0f1f9e0..291c1f33069d 100644
 From e3fed1d2682a1595b8a7bd43d45bfeca18cf27f5 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Tue, 18 Aug 2026 20:29:33 +0700
-Subject: [PATCH 4/4] hrtimer: Allow disabling deferred rearming of the hrtimer
+Subject: [PATCH 4/5] hrtimer: Allow disabling deferred rearming of the hrtimer
  interrupt
 
 ---
@@ -234,6 +234,92 @@ index 02aac7c5aa76..3cd0826be081 100644
         depends on GENERIC_ENTRY && HAVE_GENERIC_TIF_BITS
         depends on HIGH_RES_TIMERS && SCHED_HRTICK
  
+-- 
+2.55.0
+
+
+From 4e61c83df0ccfe1a13a92850900a9b6ee67faf08 Mon Sep 17 00:00:00 2001
+From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+Date: Wed, 26 Aug 2026 20:33:27 +0700
+Subject: [PATCH 5/5] tcp: Update snd_tsval_last when sending ACK in
+ TCP_NEW_SYN_RECV
+
+When a keepalive packet is received while a socket is in
+TCP_NEW_SYN_RECV (e.g. due to TCP_DEFER_ACCEPT) snd_tsval_last won't be
+updated to the tsval of the resulting ACK, causing the later ACK from
+the remote peer (with a tsecr value set from the tsval of the previous
+ACK) to be dropped for having tsecr > snd_tsval_last, stalling the
+connection until the TCP_DEFER_ACCEPT timeout.
+
+Fix this by updating snd_tsval_last in the TCP request_sock_ops.send_ack
+handler.
+
+Fixes: 3ba075278c11 ("tcp: be less liberal in TSEcr received while in SYN_RECV state")
+Signed-off-by: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
+---
+ net/ipv4/tcp_ipv4.c | 6 +++++-
+ net/ipv6/tcp_ipv6.c | 6 +++++-
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index 4b59d258c266..646e2cc6b7a9 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1086,6 +1086,7 @@ static void tcp_v4_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
+ 	 */
+ 	u32 seq = (sk->sk_state == TCP_LISTEN) ? tcp_rsk(req)->snt_isn + 1 :
+ 					     tcp_sk(sk)->snd_nxt;
++	u32 tsval = tcp_rsk_tsval(tcp_rsk(req));
+ 
+ #ifdef CONFIG_TCP_AO
+ 	if (static_branch_unlikely(&tcp_ao_needed.key) &&
+@@ -1140,11 +1141,14 @@ static void tcp_v4_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
+ 			key.type = TCP_KEY_MD5;
+ 	}
+ 
++	if (inet_rsk(req)->tstamp_ok)
++		WRITE_ONCE(tcp_rsk(req)->snt_tsval_last, tsval);
++
+ 	/* Cleaning ECN bits of TW ACKs of oow data or is paws_reject */
+ 	tcp_v4_send_ack(sk, skb, seq,
+ 			tcp_rsk(req)->rcv_nxt,
+ 			tcp_synack_window(req) >> inet_rsk(req)->rcv_wscale,
+-			tcp_rsk_tsval(tcp_rsk(req)),
++			tsval,
+ 			req->ts_recent,
+ 			0, &key,
+ 			inet_rsk(req)->no_srccheck ? IP_REPLY_ARG_NOSRCCHECK : 0,
+diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
+index 6223c2ce53e8..b3125bed1d8f 100644
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -1199,6 +1199,7 @@ static void tcp_v6_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
+ 				  struct request_sock *req)
+ {
+ 	struct tcp_key key = {};
++	u32 tsval = tcp_rsk_tsval(tcp_rsk(req));
+ 
+ #ifdef CONFIG_TCP_AO
+ 	if (static_branch_unlikely(&tcp_ao_needed.key) &&
+@@ -1254,6 +1255,9 @@ static void tcp_v6_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
+ #endif
+ 	}
+ 
++	if (inet_rsk(req)->tstamp_ok)
++		WRITE_ONCE(tcp_rsk(req)->snt_tsval_last, tsval);
++
+ 	/* sk->sk_state == TCP_LISTEN -> for regular TCP_SYN_RECV
+ 	 * sk->sk_state == TCP_SYN_RECV -> for Fast Open.
+ 	 */
+@@ -1261,7 +1265,7 @@ static void tcp_v6_reqsk_send_ack(const struct sock *sk, struct sk_buff *skb,
+ 			tcp_rsk(req)->snt_isn + 1 : tcp_sk(sk)->snd_nxt,
+ 			tcp_rsk(req)->rcv_nxt,
+ 			tcp_synack_window(req) >> inet_rsk(req)->rcv_wscale,
+-			tcp_rsk_tsval(tcp_rsk(req)),
++			tsval,
+ 			req->ts_recent, sk->sk_bound_dev_if,
+ 			&key, ipv6_get_dsfield(ipv6_hdr(skb)) & ~INET_ECN_MASK,
+ 			0,
 -- 
 2.55.0
 
