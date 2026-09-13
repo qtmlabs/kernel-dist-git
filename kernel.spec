@@ -192,18 +192,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .1
-%define specrpmversion 7.2.3
-%define specversion 7.2.3
+%define specrpmversion 7.2.5
+%define specversion 7.2.5
 %define patchversion 7.2
 %define pkgrelease 300
 %define kversion 7
-%define tarfile_release 7.2.3
+%define tarfile_release 7.2.5
 # This is needed to do merge window version magic
 %define patchlevel 2
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 300%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 7.2.3
+%define kabiversion 7.2.5
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4966,6 +4966,24 @@ fi\
 #
 #
 %changelog
+* Fri Sep 11 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.2.5-300]
+- BugsFixed and RHEL config for 7.2.5 (Justin M. Forbes)
+
+* Fri Sep 11 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.2.5-0]
+- redhat: configs: fedora: Enable Sony IMX471 image sensor (Kate Hsuan)
+- media: ipu-bridge: Add Sony IMX471 for Lenovo X1 Carbon G14 (Kate Hsuan)
+- media: ipu-bridge: Add DMI information of Lenovo X9 to the image upside-down list (Kate Hsuan)
+- media: i2c: imx471: Fix uninitialized error value in imx471_set_ctrl() (David Carlier)
+- media: i2c: imx471: Add Sony IMX471 image sensor driver (Kate Hsuan)
+- Input: soc_button_array - check btns_desc->package.count (Hans de Goede)
+- Input: soc_button_array - fix MS Surface Pro 11 probe failure (Hans de Goede)
+- Linux v7.2.5
+
+* Mon Sep 07 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.2.4-0]
+- Remove unnecessary config file for Fedora (Justin M. Forbes)
+- Add F43 and F44 to release_targets (Justin M. Forbes)
+- Linux v7.2.4
+
 * Wed Sep 02 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.2.3-0]
 - Bluetooth: btusb: limit RTL8761B BROKEN_EXT_SCAN quirk to 0bda:a728 (Junjie Cao)
 - ACPI: scan: Do not combine resources that overlap completely (Rafael J. Wysocki)
