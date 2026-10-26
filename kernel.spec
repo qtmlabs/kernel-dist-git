@@ -191,7 +191,7 @@ Summary: The Linux kernel
 #  to build the base kernel using the debug configuration. (Specifying
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
-%define buildid .1
+%define buildid .2
 %define specrpmversion 7.2.12
 %define specversion 7.2.12
 %define patchversion 7.2
