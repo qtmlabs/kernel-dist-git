@@ -191,19 +191,19 @@ Summary: The Linux kernel
 #  to build the base kernel using the debug configuration. (Specifying
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
-%define buildid .3
-%define specrpmversion 7.2.12
-%define specversion 7.2.12
+%define buildid .1
+%define specrpmversion 7.2.13
+%define specversion 7.2.13
 %define patchversion 7.2
 %define pkgrelease 300
 %define kversion 7
-%define tarfile_release 7.2.12
+%define tarfile_release 7.2.13
 # This is needed to do merge window version magic
 %define patchlevel 2
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 300%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 7.2.12
+%define kabiversion 7.2.13
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4966,6 +4966,10 @@ fi\
 #
 #
 %changelog
+* Mon Oct 26 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.2.13-0]
+- net: skbuff: propagate shared-frag marker in skb_zerocopy() (Zizhen Liu)
+- Linux v7.2.13
+
 * Wed Oct 21 2026 Augusto Caringi <acaringi@redhat.com> [7.2.12-0]
 - ALSA: hda/realtek: Fix cold-boot headset misdetection on Acer Aspire A515-57G (Oleksandr Kovalov)
 - Turn on EROFS_FS_PAGE_CACHE_SHARE for Fedora (Justin M. Forbes)

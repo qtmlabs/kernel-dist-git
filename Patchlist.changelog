@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/daf58bc156390c8ddaa055860a52368ec8c3c66f
+ daf58bc156390c8ddaa055860a52368ec8c3c66f net: skbuff: propagate shared-frag marker in skb_zerocopy()
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/8ed9fbbbff6db03da98f23fd22aeb7b836095ccf
  8ed9fbbbff6db03da98f23fd22aeb7b836095ccf ALSA: hda/realtek: Fix cold-boot headset misdetection on Acer Aspire A515-57G
 

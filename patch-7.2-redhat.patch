@@ -79,18 +79,17 @@
  include/linux/random.h                             |  10 +
  include/linux/security.h                           |   9 +
  kernel/module/signing.c                            |   9 +-
- net/core/page_pool.c                               |   3 +-
+ net/core/skbuff.c                                  |   2 +
  scripts/Makefile.lib                               |   3 +
  scripts/tags.sh                                    |   2 +
  security/integrity/platform_certs/load_uefi.c      |   6 +-
  security/lockdown/Kconfig                          |  13 +
  security/lockdown/lockdown.c                       |  11 +
  sound/hda/codecs/realtek/alc269.c                  |  35 +
- sound/soc/sof/ipc4-topology.c                      |   9 +-
  tools/testing/selftests/bpf/DENYLIST.rhel          |  76 ++
  tools/testing/selftests/bpf/Makefile               |   2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |  31 -
- 92 files changed, 4020 insertions(+), 199 deletions(-)
+ 91 files changed, 4014 insertions(+), 195 deletions(-)
 
 diff --git a/Documentation/admin-guide/sysctl/crypto.rst b/Documentation/admin-guide/sysctl/crypto.rst
 index b707bd314a64..9a1bd53287f4 100644
@@ -413,7 +412,7 @@ index 95cd976a068c..797dade0f92b 100644
  M:	Maxim Levitsky <maximlevitsky@gmail.com>
  M:	Alex Dubov <oakad@yahoo.com>
 diff --git a/Makefile b/Makefile
-index a550506403fe..7045744faf6a 100644
+index dfd40298a0cf..5243a4f1d956 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -358,6 +358,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -3030,7 +3029,7 @@ index f4ed1add58b7..2a81dac960ac 100644
  	help
  	  Enable kunit tests for GENERIC_PT and IOMMU_PT that covers all the
 diff --git a/drivers/iommu/generic_pt/fmt/Makefile b/drivers/iommu/generic_pt/fmt/Makefile
-index ea024d582594..82ca3c36823d 100644
+index e308760d02b7..a43f3b81d2db 100644
 --- a/drivers/iommu/generic_pt/fmt/Makefile
 +++ b/drivers/iommu/generic_pt/fmt/Makefile
 @@ -9,6 +9,8 @@ iommu_pt_fmt-$(CONFIG_IOMMU_PT_RISCV64) += riscv64
@@ -4651,7 +4650,7 @@ index 510c0eca4484..5473dd598d5b 100644
  };
  
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 0500d5fd4f11..b13589a0860e 100644
+index 86e6af409da2..48cf92b77509 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -4499,6 +4499,30 @@ static void quirk_aspeed_pci_bridge_no_alias(struct pci_dev *pdev)
@@ -5739,20 +5738,19 @@ index 590ba29c85ab..02153d857531 100644
  }
  
  int module_sig_check(struct load_info *info, int flags)
-diff --git a/net/core/page_pool.c b/net/core/page_pool.c
-index 34ce99514d72..d7c88c0b67e5 100644
---- a/net/core/page_pool.c
-+++ b/net/core/page_pool.c
-@@ -1073,7 +1073,8 @@ netmem_ref page_pool_alloc_frag_netmem(struct page_pool *pool,
- 	if (WARN_ON(size > max_size))
- 		return 0;
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index fa5c1c15d417..3de48c5180b4 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -3934,6 +3934,8 @@ skb_zerocopy(struct sk_buff *to, struct sk_buff *from, int len, int hlen)
+ 	}
+ 	skb_shinfo(to)->nr_frags = j;
  
--	size = ALIGN(size, dma_get_cache_alignment());
-+	size = ALIGN(size, max_t(unsigned int, dma_get_cache_alignment(),
-+				 __alignof__(struct skb_shared_info)));
- 	*offset = pool->frag_offset;
- 
- 	if (netmem && *offset + size > max_size) {
++	skb_shinfo(to)->flags |= skb_shinfo(from)->flags & SKBFL_SHARED_FRAG;
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(skb_zerocopy);
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index 0a4fdd8bd975..dcb12dad419f 100644
 --- a/scripts/Makefile.lib
@@ -5918,28 +5916,6 @@ index e98cc42e1a78..fdba2adea459 100644
  	SND_PCI_QUIRK(0x1025, 0x161f, "Acer S40-54", ALC256_FIXUP_ACER_MIC_NO_PRESENCE),
  	SND_PCI_QUIRK(0x1025, 0x1640, "Acer Aspire A315-44P", ALC256_FIXUP_ACER_SFG16_MICMUTE_LED),
  	SND_PCI_QUIRK(0x1025, 0x1679, "Acer Nitro 16 AN16-41", ALC2XX_FIXUP_HEADSET_MIC),
-diff --git a/sound/soc/sof/ipc4-topology.c b/sound/soc/sof/ipc4-topology.c
-index 8f37fbdd3f7f..5ac0195e8505 100644
---- a/sound/soc/sof/ipc4-topology.c
-+++ b/sound/soc/sof/ipc4-topology.c
-@@ -2352,11 +2352,14 @@ sof_ipc4_prepare_copier_module(struct snd_sof_widget *swidget,
- 				ch_map >>= 4;
- 			}
- 
--			if (swidget->id == snd_soc_dapm_dai_in && ch_count == out_ref_channels) {
-+			if ((swidget->id == snd_soc_dapm_dai_in && ch_count == out_ref_channels) ||
-+			    ch_count < blob->alh_cfg.device_count) {
- 				/*
- 				 * For playback DAI widgets where the channel number is equal to
--				 * the output reference channels, set the step = 0 to ensure all
--				 * the ch_mask is applied to all alh mappings.
-+				 * the output reference channels, or when there are fewer
-+				 * channels than aggregated devices (e.g. a mono capture
-+				 * stream split across multiple links), set step = 0 to
-+				 * ensure all the ch_mask is applied to all alh mappings.
- 				 */
- 				mask = ch_mask;
- 				step = 0;
 diff --git a/tools/testing/selftests/bpf/DENYLIST.rhel b/tools/testing/selftests/bpf/DENYLIST.rhel
 new file mode 100644
 index 000000000000..9424a83c6f48
