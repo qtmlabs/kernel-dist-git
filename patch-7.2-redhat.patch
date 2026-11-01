@@ -42,6 +42,9 @@
  drivers/firmware/efi/libstub/fdt.c                 |   5 +
  drivers/firmware/efi/libstub/secureboot.c          |  14 +-
  drivers/firmware/efi/secureboot.c                  |  38 +
+ drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c            |   8 +
+ drivers/gpu/drm/vmwgfx/vmwgfx_shader.c             |   2 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_streamoutput.c       |   2 +-
  drivers/hwtracing/coresight/coresight-etm4x-core.c |  19 +
  drivers/iommu/Kconfig                              |  15 +
  drivers/iommu/Makefile                             |   1 +
@@ -58,9 +61,10 @@
  drivers/iommu/iommu.c                              |  22 +
  drivers/media/i2c/Kconfig                          |  10 +
  drivers/media/i2c/Makefile                         |   1 +
+ drivers/media/i2c/cvs/Kconfig                      |   1 +
  drivers/media/i2c/cvs/core.c                       |  26 +-
  drivers/media/i2c/cvs/icvs.h                       |   2 -
- drivers/media/i2c/cvs/v4l2.c                       |  17 +-
+ drivers/media/i2c/cvs/v4l2.c                       | 112 +--
  drivers/media/i2c/imx471.c                         | 957 +++++++++++++++++++++
  drivers/media/pci/intel/ipu-bridge.c               |  48 ++
  drivers/pci/quirks.c                               |  24 +
@@ -89,7 +93,7 @@
  tools/testing/selftests/bpf/DENYLIST.rhel          |  76 ++
  tools/testing/selftests/bpf/Makefile               |   2 +-
  tools/testing/selftests/bpf/prog_tests/ksyms_btf.c |  31 -
- 91 files changed, 4014 insertions(+), 195 deletions(-)
+ 95 files changed, 4034 insertions(+), 283 deletions(-)
 
 diff --git a/Documentation/admin-guide/sysctl/crypto.rst b/Documentation/admin-guide/sysctl/crypto.rst
 index b707bd314a64..9a1bd53287f4 100644
@@ -412,7 +416,7 @@ index 95cd976a068c..797dade0f92b 100644
  M:	Maxim Levitsky <maximlevitsky@gmail.com>
  M:	Alex Dubov <oakad@yahoo.com>
 diff --git a/Makefile b/Makefile
-index dfd40298a0cf..5243a4f1d956 100644
+index ab29f857e9ed..34ba03b11033 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -358,6 +358,17 @@ ifneq ($(filter install,$(MAKECMDGOALS)),)
@@ -2240,6 +2244,58 @@ index 000000000000..de0a3714a5d4
 +		}
 +	}
 +}
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
+index a9136a6523cb..0156aee84c9f 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_execbuf.c
+@@ -1718,6 +1718,7 @@ static int vmw_cmd_res_switch_backup(struct vmw_private *dev_priv,
+ {
+ 	struct vmw_bo *vbo;
+ 	void *info;
++	u64 end;
+ 	int ret;
+ 
+ 	info = vmw_execbuf_info_from_res(sw_context, res);
+@@ -1728,6 +1729,13 @@ static int vmw_cmd_res_switch_backup(struct vmw_private *dev_priv,
+ 	if (ret)
+ 		return ret;
+ 
++	if (check_add_overflow((u64)backup_offset,
++			       (u64)res->guest_memory_size, &end) ||
++	    end > vbo->tbo.base.size) {
++		VMW_DEBUG_USER("Backup buffer too small for resource.\n");
++		return -EINVAL;
++	}
++
+ 	vmw_validation_res_switch_backup(sw_context->ctx, info, vbo,
+ 					 backup_offset);
+ 	return 0;
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_shader.c b/drivers/gpu/drm/vmwgfx/vmwgfx_shader.c
+index 39811cf19db1..033157efb1fc 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_shader.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_shader.c
+@@ -597,7 +597,7 @@ int vmw_dx_shader_add(struct vmw_cmdbuf_res_manager *man,
+ 	if (!vmw_shader_id_ok(user_key, shader_type))
+ 		return -EINVAL;
+ 
+-	shader = kmalloc_obj(*shader);
++	shader = kzalloc_obj(*shader);
+ 	if (!shader) {
+ 		return -ENOMEM;
+ 	}
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_streamoutput.c b/drivers/gpu/drm/vmwgfx/vmwgfx_streamoutput.c
+index 52c6cfa163da..34d5b71fa42f 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_streamoutput.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_streamoutput.c
+@@ -284,7 +284,7 @@ int vmw_dx_streamoutput_add(struct vmw_cmdbuf_res_manager *man,
+ 	struct vmw_private *dev_priv = ctx->dev_priv;
+ 	int ret;
+ 
+-	so = kmalloc_obj(*so);
++	so = kzalloc_obj(*so);
+ 	if (!so) {
+ 		return -ENOMEM;
+ 	}
 diff --git a/drivers/hwtracing/coresight/coresight-etm4x-core.c b/drivers/hwtracing/coresight/coresight-etm4x-core.c
 index 2247ad55d444..5f9da88479e8 100644
 --- a/drivers/hwtracing/coresight/coresight-etm4x-core.c
@@ -3457,6 +3513,18 @@ index e45359efe0e4..acbd321fc12e 100644
  obj-$(CONFIG_VIDEO_IR_I2C) += ir-kbd-i2c.o
  obj-$(CONFIG_VIDEO_ISL7998X) += isl7998x.o
  obj-$(CONFIG_VIDEO_KS0127) += ks0127.o
+diff --git a/drivers/media/i2c/cvs/Kconfig b/drivers/media/i2c/cvs/Kconfig
+index 4309d20dd726..f482f1ccc38a 100644
+--- a/drivers/media/i2c/cvs/Kconfig
++++ b/drivers/media/i2c/cvs/Kconfig
+@@ -4,6 +4,7 @@ config VIDEO_INTEL_CVS
+ 	tristate "Intel CVS CSI-2 bridge support"
+ 	depends on I2C && ACPI && VIDEO_DEV
+ 	depends on IPU_BRIDGE || !IPU_BRIDGE
++	default VIDEO_INTEL_IPU6
+ 	select MEDIA_CONTROLLER
+ 	select VIDEO_V4L2_SUBDEV_API
+ 	select V4L2_FWNODE
 diff --git a/drivers/media/i2c/cvs/core.c b/drivers/media/i2c/cvs/core.c
 index fe9e59ac311c..048c87fd9188 100644
 --- a/drivers/media/i2c/cvs/core.c
@@ -3550,10 +3618,18 @@ index cfa8ef5d975c..17beb0920dd2 100644
  	enum icvs_resources res;
  	struct icvs_dev_capabilities caps;
 diff --git a/drivers/media/i2c/cvs/v4l2.c b/drivers/media/i2c/cvs/v4l2.c
-index 3a1ec0059ef7..9fadca7a3bee 100644
+index 3a1ec0059ef7..e2104ed2b932 100644
 --- a/drivers/media/i2c/cvs/v4l2.c
 +++ b/drivers/media/i2c/cvs/v4l2.c
-@@ -46,6 +46,7 @@ static const struct v4l2_mbus_framefmt cvs_csi_format_mbus_default = {
+@@ -13,6 +13,7 @@
+ #include <media/v4l2-async.h>
+ #include <media/v4l2-common.h>
+ #include <media/v4l2-ctrls.h>
++#include <media/v4l2-device.h>
+ #include <media/v4l2-event.h>
+ #include <media/v4l2-fwnode.h>
+ #include <media/v4l2-mc.h>
+@@ -46,6 +47,7 @@ static const struct v4l2_mbus_framefmt cvs_csi_format_mbus_default = {
  /**
   * csi_set_link_cfg - Program default CSI-2 link parameters
   * @ctx: CVS device context
@@ -3561,7 +3637,7 @@ index 3a1ec0059ef7..9fadca7a3bee 100644
   *
   * Populates a HOST_SET_MIPI_CONFIG command using current lane count and
   * link frequency, then submits it to the device.
-@@ -53,12 +54,12 @@ static const struct v4l2_mbus_framefmt cvs_csi_format_mbus_default = {
+@@ -53,12 +55,12 @@ static const struct v4l2_mbus_framefmt cvs_csi_format_mbus_default = {
   *
   * Return: 0 on success or negative errno.
   */
@@ -3576,7 +3652,27 @@ index 3a1ec0059ef7..9fadca7a3bee 100644
  	};
  	size_t cmd_size = sizeof(cmd.cmd_id) + sizeof(cmd.param.conf);
  
-@@ -91,7 +92,7 @@ static int cvs_csi_enable_streams(struct v4l2_subdev *sd,
+@@ -70,19 +72,6 @@ static int csi_set_link_cfg(struct icvs *ctx)
+  * Streaming
+  */
+ 
+-/**
+- * cvs_csi_enable_streams - Start streaming through the bridge
+- * @sd: Sub-device pointer
+- * @state: Active state
+- * @pad: Pad identifier (must be ICVS_CSI_PAD_SOURCE)
+- * @streams_mask: Streams to enable (bit 0 supported)
+- *
+- * Runtime-resumes the bridge (triggering cvs_runtime_resume() to claim CSI-2
+- * link ownership), fetches the link frequency, programs the MIPI configuration,
+- * and forwards the enable request downstream.
+- *
+- * Return: 0 on success or negative errno.
+- */
+ static int cvs_csi_enable_streams(struct v4l2_subdev *sd,
+ 				  struct v4l2_subdev_state *state,
+ 				  u32 pad, u64 streams_mask)
+@@ -91,7 +80,7 @@ static int cvs_csi_enable_streams(struct v4l2_subdev *sd,
  	struct v4l2_subdev *remote_sd =
  			    media_entity_to_v4l2_subdev(ctx->remote->entity);
  	struct device *dev = cvs_dev(ctx);
@@ -3585,7 +3681,7 @@ index 3a1ec0059ef7..9fadca7a3bee 100644
  	int ret;
  
  	/* cvs_set_link_owner(ICVS_CSI_LINK_HOST) */
-@@ -99,15 +100,14 @@ static int cvs_csi_enable_streams(struct v4l2_subdev *sd,
+@@ -99,15 +88,14 @@ static int cvs_csi_enable_streams(struct v4l2_subdev *sd,
  	if (ret < 0)
  		return ret;
  
@@ -3605,7 +3701,79 @@ index 3a1ec0059ef7..9fadca7a3bee 100644
  		if (ret < 0)
  			goto err_rpm_put_sync;
  	}
-@@ -345,7 +345,6 @@ static int cvs_csi_get_mbus_config(struct v4l2_subdev *sd, unsigned int pad,
+@@ -129,19 +117,6 @@ static int cvs_csi_enable_streams(struct v4l2_subdev *sd,
+ 	return ret;
+ }
+ 
+-/**
+- * cvs_csi_disable_streams - Stop streaming through the bridge
+- * @sd: Sub-device pointer
+- * @state: Active state
+- * @pad: Pad identifier (must be ICVS_CSI_PAD_SOURCE)
+- * @streams_mask: Streams to disable (bit 0 supported)
+- *
+- * Disables the remote sensor stream then drops the PM reference acquired
+- * during enable. After the autosuspend delay, cvs_runtime_suspend() will
+- * return CSI-2 link ownership to CVS firmware.
+- *
+- * Return: 0 on success or negative errno.
+- */
+ static int cvs_csi_disable_streams(struct v4l2_subdev *sd,
+ 				   struct v4l2_subdev_state *state,
+ 				   u32 pad, u64 streams_mask)
+@@ -167,15 +142,6 @@ static int cvs_csi_disable_streams(struct v4l2_subdev *sd,
+ /*
+  * Pad operations / formats
+  */
+-/**
+- * cvs_csi_init_state - Initialize pad formats in subdev state
+- * @sd: Sub-device
+- * @state: State container
+- *
+- * Sets all pad formats to a minimal 1x1 default.
+- *
+- * Return: 0.
+- */
+ static int cvs_csi_init_state(struct v4l2_subdev *sd,
+ 			      struct v4l2_subdev_state *state)
+ {
+@@ -186,17 +152,6 @@ static int cvs_csi_init_state(struct v4l2_subdev *sd,
+ 	return 0;
+ }
+ 
+-/**
+- * cvs_csi_set_fmt - Negotiate pad format
+- * @sd: Sub-device
+- * @state: State
+- * @format: Desired / returned format
+- *
+- * Mirrors sink format onto source pad. Accepts many media bus codes, falling
+- * back to Y8 if unsupported. Normalizes field setting.
+- *
+- * Return: 0.
+- */
+ static int cvs_csi_set_fmt(struct v4l2_subdev *sd,
+ 			   struct v4l2_subdev_state *state,
+ 			   struct v4l2_subdev_format *format)
+@@ -319,17 +274,6 @@ static int cvs_csi_set_fmt(struct v4l2_subdev *sd,
+ 	return 0;
+ }
+ 
+-/**
+- * cvs_csi_get_mbus_config - Provide current CSI-2 bus configuration
+- * @sd: Sub-device
+- * @pad: Pad index
+- * @cfg: Returned bus config
+- *
+- * Fills lane ordering and number of lanes; retrieves link frequency from
+- * remote entity.
+- *
+- * Return: 0 on success or negative errno.
+- */
+ static int cvs_csi_get_mbus_config(struct v4l2_subdev *sd, unsigned int pad,
+ 				   struct v4l2_mbus_config *cfg)
+ {
+@@ -345,7 +289,6 @@ static int cvs_csi_get_mbus_config(struct v4l2_subdev *sd, unsigned int pad,
  	if (freq < 0)
  		return -EINVAL;
  
@@ -3613,6 +3781,71 @@ index 3a1ec0059ef7..9fadca7a3bee 100644
  	cfg->link_freq = freq;
  
  	return 0;
+@@ -385,23 +328,12 @@ static const struct media_entity_operations cvs_csi_entity_ops = {
+ /*
+  * Async notifier
+  */
+-/**
+- * cvs_csi_notify_bound - Remote sensor bound callback
+- * @notifier: Async notifier
+- * @sd: Remote subdev
+- * @asc: Async match connection
+- *
+- * Locates the source pad of the remote sensor and creates a media link to
+- * the CVS bridge sink pad enabling it by default.
+- *
+- * Return: 0 on success or negative errno.
+- */
+ static int cvs_csi_notify_bound(struct v4l2_async_notifier *notifier,
+ 				struct v4l2_subdev *sd,
+ 				struct v4l2_async_connection *asc)
+ {
+ 	struct icvs *ctx = notifier_to_csi(notifier);
+-	int pad;
++	int pad, ret;
+ 
+ 	pad = media_entity_get_fwnode_pad(&sd->entity, asc->match.fwnode,
+ 					  MEDIA_PAD_FL_SOURCE);
+@@ -410,17 +342,15 @@ static int cvs_csi_notify_bound(struct v4l2_async_notifier *notifier,
+ 
+ 	ctx->remote = &sd->entity.pads[pad];
+ 
+-	return media_create_pad_link(&sd->entity, pad, &ctx->subdev.entity,
+-				     ICVS_CSI_PAD_SINK, MEDIA_LNK_FL_ENABLED |
+-				     MEDIA_LNK_FL_IMMUTABLE);
++	ret = media_create_pad_link(&sd->entity, pad, &ctx->subdev.entity,
++				    ICVS_CSI_PAD_SINK, MEDIA_LNK_FL_ENABLED |
++				    MEDIA_LNK_FL_IMMUTABLE);
++	if (ret)
++		return ret;
++
++	return v4l2_device_register_subdev_nodes(sd->v4l2_dev);
+ }
+ 
+-/**
+- * cvs_csi_notify_unbind - Remote sensor unbind callback
+- * @notifier: Notifier
+- * @sd: Remote subdev
+- * @asc: Connection
+- */
+ static void cvs_csi_notify_unbind(struct v4l2_async_notifier *notifier,
+ 				  struct v4l2_subdev *sd,
+ 				  struct v4l2_async_connection *asc)
+@@ -438,14 +368,6 @@ static const struct v4l2_async_notifier_operations cvs_csi_notify_ops = {
+ /*
+  * Controls
+  */
+-/**
+- * cvs_csi_init_controls - Initialize V4L2 controls
+- * @ctx: CVS context
+- *
+- * Currently sets up a read-only privacy control placeholder.
+- *
+- * Return: 0 on success or negative errno.
+- */
+ static int cvs_csi_init_controls(struct icvs *ctx)
+ {
+ 	struct v4l2_ctrl *privacy_ctrl;
 diff --git a/drivers/media/i2c/imx471.c b/drivers/media/i2c/imx471.c
 new file mode 100644
 index 000000000000..180a2449851f

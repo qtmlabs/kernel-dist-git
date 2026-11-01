@@ -1,3 +1,15 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/64e49685d0fb8eba5827eaf213f196db929ab481
+ 64e49685d0fb8eba5827eaf213f196db929ab481 media: cvs: Default selection to VIDEO_INTEL_IPU6
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/74cb39e19858356dab8f225ad3f8c3c2b337de90
+ 74cb39e19858356dab8f225ad3f8c3c2b337de90 media: cvs: Drop comments on sub-device operations
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/2084b066715d44645ad28abe30146d0e87bf5222
+ 2084b066715d44645ad28abe30146d0e87bf5222 media: i2c: cvs: Add sensor node in bound callback
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/bce141f3dfbf6aa1d612ed3270bcc533ba0e2d0a
+ bce141f3dfbf6aa1d612ed3270bcc533ba0e2d0a drm/vmwgfx: validate backup buffer size in command buffer processing
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/daf58bc156390c8ddaa055860a52368ec8c3c66f
  daf58bc156390c8ddaa055860a52368ec8c3c66f net: skbuff: propagate shared-frag marker in skb_zerocopy()
 
