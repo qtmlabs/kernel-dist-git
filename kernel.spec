@@ -192,18 +192,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .1
-%define specrpmversion 7.2.14
-%define specversion 7.2.14
+%define specrpmversion 7.2.15
+%define specversion 7.2.15
 %define patchversion 7.2
 %define pkgrelease 300
 %define kversion 7
-%define tarfile_release 7.2.14
+%define tarfile_release 7.2.15
 # This is needed to do merge window version magic
 %define patchlevel 2
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 300%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 7.2.14
+%define kabiversion 7.2.15
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4966,6 +4966,9 @@ fi\
 #
 #
 %changelog
+* Sun Nov 01 2026 Justin M. Forbes <jforbes@fedoraproject.org> [7.2.15-0]
+- Linux v7.2.15
+
 * Fri Oct 30 2026 Augusto Caringi <acaringi@redhat.com> [7.2.14-0]
 - media: cvs: Default selection to VIDEO_INTEL_IPU6 (Sakari Ailus)
 - media: cvs: Drop comments on sub-device operations (Sakari Ailus)
