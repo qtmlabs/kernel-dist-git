@@ -1,7 +1,7 @@
-From c7e7b6266583472f06790cfec9556ae74649664c Mon Sep 17 00:00:00 2001
+From f07ea940197b3f6dbfd1a3ef983fbd9c3119e580 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 23 Mar 2026 20:55:31 +0700
-Subject: [PATCH 1/7] drm/i915: Fix tiled panic write when pitch != width * cpp
+Subject: [PATCH 1/9] drm/i915: Fix tiled panic write when pitch != width * cpp
 
 ---
  drivers/gpu/drm/i915/gem/i915_gem_panic.c | 4 ++--
@@ -44,13 +44,13 @@ index 12c6fb99015d..2dcd394bdb04 100644
  		offset = y * sb->pitch[0] + x * sb->format->cpp[0];
  
 -- 
-2.56.0
+2.56.1
 
 
-From 565d5f9217edf8cd30453f933ab7d23a724f2602 Mon Sep 17 00:00:00 2001
+From 9d4f4de53ae100d4afcdc3f28f236d0410adeab7 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 23 Mar 2026 21:40:30 +0700
-Subject: [PATCH 2/7] drm/i915: Always disable compression when disabling
+Subject: [PATCH 2/9] drm/i915: Always disable compression when disabling
  tiling
 
 ---
@@ -76,13 +76,13 @@ index eb5ed981b40f..918ed03f1eb2 100644
  		u32 stride = state->view.color_plane[0].scanout_stride / 64;
  
 -- 
-2.56.0
+2.56.1
 
 
-From 4c566380268a1e7e4841268da6e2e2a72ce2b42a Mon Sep 17 00:00:00 2001
+From 6b73db0789e6a4ea3c979ab943ba3df290908ffe Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 7 Jul 2025 10:43:40 +0700
-Subject: [PATCH 3/7] drm: Allow disabling automatic DRM master acquisition
+Subject: [PATCH 3/9] drm: Allow disabling automatic DRM master acquisition
  semantics
 
 ---
@@ -207,13 +207,13 @@ index e5013b870ba0..ae548858f611 100644
  		spin_lock(&file_priv->master_lookup_lock);
  		file_priv->master = drm_master_get(dev->master);
 -- 
-2.56.0
+2.56.1
 
 
-From 1434c32d5b07497e9c5fb635e17b6bd94a492270 Mon Sep 17 00:00:00 2001
+From f4fd5b17a1fb0a174892605b39dc1daaa5a9738e Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Tue, 18 Aug 2026 20:29:33 +0700
-Subject: [PATCH 4/7] hrtimer: Allow disabling deferred rearming of the hrtimer
+Subject: [PATCH 4/9] hrtimer: Allow disabling deferred rearming of the hrtimer
  interrupt
 
 ---
@@ -235,13 +235,13 @@ index ddfb6bee0745..9c229f2bd0c5 100644
         depends on HIGH_RES_TIMERS && SCHED_HRTICK
  
 -- 
-2.56.0
+2.56.1
 
 
-From 08762846f6cadfb70e8f2852dc3a6906abdcc480 Mon Sep 17 00:00:00 2001
+From 28fd8f143fd8b44b6ba255dd9f46c6c760a753ae Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Wed, 26 Aug 2026 20:33:27 +0700
-Subject: [PATCH 5/7] tcp: Update snd_tsval_last when sending ACK in
+Subject: [PATCH 5/9] tcp: Update snd_tsval_last when sending ACK in
  TCP_NEW_SYN_RECV
 
 When a keepalive packet is received while a socket is in
@@ -321,13 +321,13 @@ index 7fa4ed2fd4f1..8bdac26c3fa0 100644
  			&key, ipv6_get_dsfield(ipv6_hdr(skb)) & ~INET_ECN_MASK,
  			0,
 -- 
-2.56.0
+2.56.1
 
 
-From c2b171ffa825eb61184873b3d8e8a239ffd16823 Mon Sep 17 00:00:00 2001
+From d1242a4b4cdfc1483ee9c9d8e71fb4442c15257d Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Thu, 27 Aug 2026 07:11:36 +0700
-Subject: [PATCH 6/7] mm/compaction: Use folio_expected_ref_count for pinned
+Subject: [PATCH 6/9] mm/compaction: Use folio_expected_ref_count for pinned
  page detection
 
 ---
@@ -362,13 +362,13 @@ index a049415512c6..7d3dece25079 100644
  			goto isolate_fail_put;
  
 -- 
-2.56.0
+2.56.1
 
 
-From 254b8921f628d3fd6de6f0bfc5b4918084fd1ff1 Mon Sep 17 00:00:00 2001
+From f3d0b8dadb673a38a89704a96e6676a8261481e0 Mon Sep 17 00:00:00 2001
 From: Myrrh Periwinkle <myrrhperiwinkle@qtmlabs.xyz>
 Date: Mon, 26 Oct 2026 13:44:26 +0700
-Subject: [PATCH 7/7] netfilter: nat: Improve address randomization
+Subject: [PATCH 7/9] netfilter: nat: Improve address randomization
 
 ---
  net/netfilter/nf_nat_core.c | 30 ++++++++++++++++++++++++------
@@ -430,5 +430,254 @@ index cc8e1e81006d..91b6e13aac8c 100644
  }
  
 -- 
-2.56.0
+2.56.1
+
+
+From 0b352471cc2b3de2b8c769c5a66197773801cdd8 Mon Sep 17 00:00:00 2001
+From: Ido Schimmel <idosch@nvidia.com>
+Date: Thu, 19 Nov 2026 18:57:58 +0200
+Subject: [PATCH 8/9] Re: [PATCH net v3 2/3] ipv6: Honor suppress_prefixlength
+ in fib6_lookup()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+On Thu, Nov 19, 2026 at 06:03:34AM +0000, netdev-bot+sashiko@kernel.org wrote:
+> Thank you for your contribution! Sashiko AI review found 2 potential
+> issue(s) to consider.
+>
+> Critical: 0 · High: 0 · Medium: 1 · Low: 1
+>
+> If you believe none of the issues are legitimate, please reply to each
+> issue of Medium severity or higher and explain why the AI is wrong.
+> If any of them are legitimate and you plan to respin, please let patchwork
+> know by including "pw-bot: cr" as a separate line at the end of your reply
+> (one such reply per series is enough).
+>
+> - [Medium] The new RTF_REJECT exemption in fib6_rule_suppress() and the
+>   commit message's reason for it ("Do not suppress such routes so that…
+> - [Low] The commit message and Fixes: tag present this as a fix for the
+>   nftables regression from commit 1c32b24c234b, but the code change has…
+>
+> --
+>
+> ipv6: Honor suppress_prefixlength in fib6_lookup()
+>
+> This patch makes fib6_rule_suppress() honour suppress_prefixlength when
+> the lookup goes through fib6_lookup(). That path uses
+> fib6_rule_action_alt(), which never populates res->rt6. The new code
+> compares the FIB entry prefix length against suppress_prefixlen, and it
+> does not suppress results that carry RTF_REJECT.
+>
+> Link: https://github.com/firewalld/firewalld/issues/1600
+>
+> > Fixes: 1c32b24c234b ("netfilter: nft_fib_ipv6: switch to fib6_lookup")
+>
+> [Severity: Low]
+>
+> This isn't a code bug, but should the changelog and Fixes: tag cover the
+> other fib6_lookup() callers too?
+>
+> The new branch in fib6_rule_suppress() runs for every fib6_lookup() call
+> while custom IPv6 rules exist, not only for nft_fib6_lookup(). At least
+> two other callers change behaviour.
+>
+> The first is bpf_ipv6_fib_lookup() in net/core/filter.c. This is the
+> bpf_fib_lookup() helper without BPF_FIB_LOOKUP_DIRECT:
+>
+>     err = fib6_lookup(net, oif, &fl6, &res, strict);
+>
+> The second is ip6_route_check_nh() in net/ipv6/route.c, which validates
+> the gateway when a route is added:
+>
+>     err = fib6_lookup(net, cfg->fc_ifindex, &fl6, &res, flags);
+>
+> With a WireGuard-style "ip -6 rule add table main suppress_prefixlength 0",
+> bpf_fib_lookup() now returns the VPN table route. Before this patch it
+> returned the main table default route.
+>
+> For the BPF helper, the missing suppression is older than 1c32b24c234b.
+> The custom rules path of fib6_lookup() came from 138118ec96cb (2018). It
+> was converted to fib6_result in effda4dd97e878 (2019).
+> fib6_rule_action_alt() has never set res->rt6, so the old suppress code
+> always returned false on this path.
+>
+> The v3 notes say this message and Fixes tag were suggested in review.
+> Even so, stable backports that follow the 1c32b24c234b tag won't reach
+> older kernels where BPF users are affected.
+>
+> Would it make sense to mention the BPF and route-add callers in the
+> changelog? Should there also be a Fixes: tag for the older commit?
+>
+> > diff --git a/net/ipv6/fib6_rules.c b/net/ipv6/fib6_rules.c
+> > index 5e2a79a81bf35..2f43e4e48e0d0 100644
+> > --- a/net/ipv6/fib6_rules.c
+> > +++ b/net/ipv6/fib6_rules.c
+> > @@ -288,6 +288,12 @@ INDIRECT_CALLABLE_SCOPE bool fib6_rule_suppress(struct fib_rule *rule,
+> >  	struct fib6_info *from;
+> >  	int plen;
+> >
+> > +	if (arg->lookup_ptr == fib6_table_lookup) {
+> > +		/* fib6_table_lookup() returns 0 for reject routes. */
+> > +		return !(res->fib6_flags & RTF_REJECT) &&
+> > +		       res->f6i->fib6_dst.plen <= rule->suppress_prefixlen;
+> > +	}
+>
+> [Severity: Medium]
+>
+> Is the RTF_REJECT exemption correct for RTN_THROW routes? The commit
+> message says:
+>
+>   Do not suppress such routes so that they continue to terminate the
+>   lookup, as with ip6_route_output() and IPv4.
+>
+> rtm_to_fib6_config() also sets RTF_REJECT on throw routes:
+>
+> 	if (rtm->rtm_type == RTN_UNREACHABLE ||
+> 	    rtm->rtm_type == RTN_BLACKHOLE ||
+> 	    rtm->rtm_type == RTN_PROHIBIT ||
+> 	    rtm->rtm_type == RTN_THROW)
+> 		cfg->fc_flags |= RTF_REJECT;
+>
+> A throw route doesn't end the lookup in ip6_route_output(). This is what
+> __fib6_rule_action() does:
+>
+> 		err = rt->dst.error;
+> 		if (err != -EAGAIN)
+> 			goto out;
+>
+> fib6_prop[RTN_THROW] is -EAGAIN, so fib_rules_lookup() goes on to the
+> next rule. IPv4 does the same through fib_props[RTN_THROW].error.
+>
+> In the fib6_lookup() path, fib6_rule_action_alt() only checks for
+> fib6_null_entry:
+>
+> 	err = fib6_table_lookup(net, table, *oif, flp6, res, flags);
+> 	if (!err && res->f6i != net->ipv6.fib6_null_entry)
+> 		err = fib6_rule_saddr(net, rule, flags, flp6,
+> 				      res->nh->fib_nh_dev);
+> 	else
+> 		err = -EAGAIN;
+>
+> So a throw route gives err == 0. fib6_rule_suppress() then returns false
+> because of RTF_REJECT, and the rule walk stops with the throw route as
+> the result.
+>
+> The callers then see:
+>
+>   __nft_fib6_eval_type() returns RTN_THROW
+>   nft_fib6_eval() returns without setting an oif
+>   bpf_ipv6_fib_lookup() returns BPF_FIB_LKUP_RET_NOT_FWDED
+>   ip6_route_check_nh() returns -EHOSTUNREACH
+>
+> In the same case, ip6_route_output() would use a later rule. An nft fib
+> rpfilter rule such as firewalld's "fib saddr . mark . iif oif missing
+> drop" can then drop legitimate packets.
+>
+> The lookup already stopped at throw routes before this patch, because the
+> old suppress code always returned false here. For a throw route with
+> plen <= suppress_prefixlen, though, ip6_route_output() moves on to the
+> next rule. The new branch makes fib6_lookup() stop instead.
+>
+> Would it be better for fib6_rule_action_alt() to return -EAGAIN when
+> res->fib6_type == RTN_THROW, as __fib6_rule_action() does?
+
+The patch under review doesn't introduce a regression for throw routes
+(which I suspect are rarely used). fib6_rule_action_alt() never handled
+them correctly and always returned 0 instead of -EAGAIN, unlike its
+__fib6_rule_action() counterpart.
+
+I can follow up with [1]. Regardless, I don't think we need to hold up
+v4 because of this, as the patch is fixing an actual regression.
+
+[1]
+---
+ net/ipv6/fib6_rules.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/net/ipv6/fib6_rules.c b/net/ipv6/fib6_rules.c
+index 0ffd7b47a046..adfaf2b8884c 100644
+--- a/net/ipv6/fib6_rules.c
++++ b/net/ipv6/fib6_rules.c
+@@ -191,7 +191,8 @@ static int fib6_rule_action_alt(struct fib_rule *rule, struct flowi *flp,
+ 
+ 	oif = (int *)arg->lookup_data;
+ 	err = fib6_table_lookup(net, table, *oif, flp6, res, flags);
+-	if (!err && res->f6i != net->ipv6.fib6_null_entry)
++	if (!err && res->f6i != net->ipv6.fib6_null_entry &&
++	    res->fib6_type != RTN_THROW)
+ 		err = fib6_rule_saddr(net, rule, flags, flp6,
+ 				      res->nh->fib_nh_dev);
+ 	else
+-- 
+2.56.1
+
+
+From fa3c61cde2b4dd59360c16fe8adf466844bfc3de Mon Sep 17 00:00:00 2001
+From: Leonard Lausen <leonard@lausen.nl>
+Date: Tue, 17 Nov 2026 11:08:11 +0000
+Subject: [PATCH 9/9] ipv6: Honor suppress_prefixlength in fib6_lookup()
+
+When custom FIB rules are configured, fib6_lookup() performs the lookup
+via fib6_rule_action_alt() which calls fib6_table_lookup() and only
+populates the f6i, nh, fib6_flags and fib6_type fields of the FIB
+result. However, fib6_rule_suppress() only examines the rt6 field, which
+is only populated when the lookup is performed via one of the callers of
+fib6_rule_lookup() such as ip6_route_output(). As a result,
+fib6_lookup() ignores suppress_prefixlength.
+
+This was not a problem for nftables until commit 1c32b24c234b
+("netfilter: nft_fib_ipv6: switch to fib6_lookup") switched the FIB
+expression from ip6_route_lookup() / nf_ip6_route() to fib6_lookup().
+Since then, with a rule that suppresses the default route in the main
+table before looking up a VPN table (as commonly configured for
+WireGuard), the FIB expression returns the suppressed default route
+instead of the VPN route. Strict reverse path filtering then drops
+replies received over the VPN.
+
+Fix by evaluating suppress_prefixlength against the prefix length of
+the FIB entry when the lookup is performed via fib6_lookup().
+
+fib_rules_lookup() only invokes the suppress callback when the rule
+action returns 0. Unlike __fib6_rule_action(), fib6_rule_action_alt()
+returns 0 for reject routes and instead sets RTF_REJECT in the result.
+Do not suppress such routes so that they continue to terminate the
+lookup, as with ip6_route_output() and IPv4. Check the flags in the
+result rather than in the FIB entry so that blackhole nexthop objects
+are also covered.
+
+suppress_ifgroup is not handled since fib6_table_lookup() does not
+perform multipath selection and the nexthop it returns might not be the
+one that is eventually used.
+
+Observed during WireGuard use and reproduced on unmodified v7.4-rc2,
+without instrumentation or error injection. Verified with namespace
+probes and nft_fib.sh on the rebuilt v7.4-rc2-based kernel.
+
+Fixes: 1c32b24c234b ("netfilter: nft_fib_ipv6: switch to fib6_lookup")
+Link: https://github.com/firewalld/firewalld/issues/1600
+Signed-off-by: Leonard Lausen <leonard@lausen.nl>
+---
+ net/ipv6/fib6_rules.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/net/ipv6/fib6_rules.c b/net/ipv6/fib6_rules.c
+index adfaf2b8884c..8055a95356e2 100644
+--- a/net/ipv6/fib6_rules.c
++++ b/net/ipv6/fib6_rules.c
+@@ -287,6 +287,12 @@ INDIRECT_CALLABLE_SCOPE bool fib6_rule_suppress(struct fib_rule *rule,
+ 	struct rt6_info *rt = res->rt6;
+ 	struct net_device *dev = NULL;
+ 
++	if (arg->lookup_ptr == fib6_table_lookup) {
++		/* fib6_table_lookup() returns 0 for reject routes. */
++		return !(res->fib6_flags & RTF_REJECT) &&
++		       res->f6i->fib6_dst.plen <= rule->suppress_prefixlen;
++	}
++
+ 	if (!rt)
+ 		return false;
+ 
+-- 
+2.56.1
 

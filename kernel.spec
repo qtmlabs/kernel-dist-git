@@ -168,7 +168,7 @@ Summary: The Linux kernel
 # Set released_kernel to 0 when the upstream source tarball contains an
 #  unreleased kernel development snapshot.
 %global released_kernel 1
-%define buildid .1
+%define buildid .2
 %define specrpmversion 7.3.5
 %define specversion 7.3.5
 %define patchversion 7.3
